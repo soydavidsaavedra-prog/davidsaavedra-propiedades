@@ -5,6 +5,7 @@ import {
   propertiesFixture,
   propertyTypesFixture,
 } from "./fixtures";
+import { todayInChile } from "@/lib/format";
 import type { PropertyFilters } from "./filters";
 import type {
   BusinessType,
@@ -79,11 +80,6 @@ export async function listPublishedProperties(): Promise<PropertySummary[]> {
   return propertiesFixture.filter(isPublished).sort(byListingOrder).map(toSummary);
 }
 
-/** Fecha local (Chile) en formato YYYY-MM-DD, para comparar con `availableFrom`. */
-function todayInChile(): string {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago" }).format(new Date());
-}
-
 function matchesFilters(
   property: PropertyRecord,
   filters: PropertyFilters,
@@ -143,6 +139,21 @@ export async function searchPublishedProperties(
 export async function getPublishedPropertyBySlug(slug: string): Promise<PropertyDetail | null> {
   const property = propertiesFixture.find((item) => item.slug === slug && isPublished(item));
   return property ? toDetail(property) : null;
+}
+
+/** Otras propiedades publicadas del mismo tipo (para "Otras propiedades"). */
+export async function listRelatedProperties(
+  property: Pick<PropertySummary, "id" | "type">,
+  limit = 3,
+): Promise<PropertySummary[]> {
+  return propertiesFixture
+    .filter(
+      (item) =>
+        isPublished(item) && item.id !== property.id && item.type.slug === property.type.slug,
+    )
+    .sort(byListingOrder)
+    .slice(0, limit)
+    .map(toSummary);
 }
 
 /** Todos los tipos (los inactivos se muestran como "Próximamente"). */

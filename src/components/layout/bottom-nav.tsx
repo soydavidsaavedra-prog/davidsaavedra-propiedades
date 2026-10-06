@@ -15,6 +15,9 @@ function resolveActive(pathname: string): string | null {
 export function BottomNav() {
   const pathname = usePathname();
 
+  // En la ficha de propiedad la reemplaza la barra de acción (PropertyCtaBar).
+  if (/^\/propiedades\/[^/]+$/.test(pathname)) return null;
+
   return (
     <nav
       aria-label="Principal"
