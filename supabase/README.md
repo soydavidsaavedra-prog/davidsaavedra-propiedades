@@ -7,17 +7,18 @@
 
 ## Migraciones (orden de ejecución)
 
-| Archivo                   | Contenido                                                                                     |
-| ------------------------- | --------------------------------------------------------------------------------------------- |
-| `…000100_base.sql`        | Enums y `set_updated_at()`                                                                    |
-| `…000200_catalogs.sql`    | `property_types`, `communes`, `features`, `business_types`                                    |
-| `…000300_profiles.sql`    | `profiles` (rol), alta automática desde `auth.users`, `is_admin()`                            |
-| `…000400_properties.sql`  | `properties`, `property_internal`, `owners`, `property_owners`, media, características y usos |
-| `…000500_crm.sql`         | `leads`, `lead_properties`, `lead_status_history`, `lead_activities`, `visits`                |
-| `…000600_rls.sql`         | Row Level Security de todas las tablas                                                        |
-| `…000700_submit_lead.sql` | `submit_lead()`: única vía de entrada de leads públicos                                       |
-| `…000800_storage.sql`     | Bucket `property-media` y sus políticas                                                       |
-| `…000900_grants.sql`      | Permisos explícitos de la Data API (mínimo privilegio)                                        |
+| Archivo                         | Contenido                                                                                     |
+| ------------------------------- | --------------------------------------------------------------------------------------------- |
+| `…000100_base.sql`              | Enums y `set_updated_at()`                                                                    |
+| `…000200_catalogs.sql`          | `property_types`, `communes`, `features`, `business_types`                                    |
+| `…000300_profiles.sql`          | `profiles` (rol), alta automática desde `auth.users`, `is_admin()`                            |
+| `…000400_properties.sql`        | `properties`, `property_internal`, `owners`, `property_owners`, media, características y usos |
+| `…000500_crm.sql`               | `leads`, `lead_properties`, `lead_status_history`, `lead_activities`, `visits`                |
+| `…000600_rls.sql`               | Row Level Security de todas las tablas                                                        |
+| `…000700_submit_lead.sql`       | `submit_lead()`: única vía de entrada de leads públicos                                       |
+| `…000800_storage.sql`           | Bucket `property-media` y sus políticas                                                       |
+| `…000900_grants.sql`            | Permisos explícitos de la Data API (mínimo privilegio)                                        |
+| `…001000_profiles_backfill.sql` | Perfiles para usuarios creados antes de instalar el esquema                                   |
 
 `seed.sql` carga los catálogos iniciales (sin datos personales ni propiedades).
 

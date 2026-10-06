@@ -867,6 +867,18 @@ grant select on public.lead_status_history to authenticated;
 -- Crear propiedades usa la secuencia del código DS-0001.
 grant usage, select on sequence public.property_code_seq to authenticated;
 
+-- >>> supabase/migrations/20261006001000_profiles_backfill.sql
+-- =============================================================================
+-- Perfiles para usuarios creados antes de instalar el esquema.
+-- El trigger on_auth_user_created solo cubre usuarios nuevos; esta migración
+-- (idempotente) crea el perfil faltante de usuarios que ya existían.
+-- =============================================================================
+
+insert into public.profiles (id, full_name)
+select u.id, u.raw_user_meta_data ->> 'full_name'
+from auth.users u
+on conflict (id) do nothing;
+
 -- >>> supabase/seed.sql
 -- =============================================================================
 -- Datos iniciales de catálogos (idempotente). Sin datos personales ni propiedades.
