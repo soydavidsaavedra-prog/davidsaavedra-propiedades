@@ -1,12 +1,15 @@
 import {
   businessTypesFixture,
   communesFixture,
+  featuresFixture,
   propertiesFixture,
   propertyTypesFixture,
 } from "./fixtures";
+import type { PropertyFilters } from "./filters";
 import type {
   BusinessType,
   Commune,
+  Feature,
   PropertyDetail,
   PropertyRecord,
   PropertySummary,
@@ -76,6 +79,67 @@ export async function listPublishedProperties(): Promise<PropertySummary[]> {
   return propertiesFixture.filter(isPublished).sort(byListingOrder).map(toSummary);
 }
 
+/** Fecha local (Chile) en formato YYYY-MM-DD, para comparar con `availableFrom`. */
+function todayInChile(): string {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "America/Santiago" }).format(new Date());
+}
+
+function matchesFilters(
+  property: PropertyRecord,
+  filters: PropertyFilters,
+  today: string,
+): boolean {
+  const price = property.price.amount;
+  const hasPriceFilter = filters.priceMin !== undefined || filters.priceMax !== undefined;
+
+  if (filters.type && property.type.slug !== filters.type) return false;
+  if (filters.commune && property.commune.slug !== filters.commune) return false;
+  // "Precio a consultar" no entra en búsquedas con rango de precio.
+  if (hasPriceFilter && price === null) return false;
+  if (filters.priceMin !== undefined && price !== null && price < filters.priceMin) return false;
+  if (filters.priceMax !== undefined && price !== null && price > filters.priceMax) return false;
+  if (filters.areaMin !== undefined && (property.builtAreaM2 ?? 0) < filters.areaMin) return false;
+  if (filters.bathroomsMin !== undefined && (property.bathrooms ?? 0) < filters.bathroomsMin) {
+    return false;
+  }
+  if (filters.withParking && (property.parkingSpots ?? 0) < 1) return false;
+  if (
+    filters.availableNow &&
+    (property.availability !== "available" ||
+      (property.availableFrom !== null && property.availableFrom > today))
+  ) {
+    return false;
+  }
+  const keys = new Set(property.features.map((feature) => feature.key));
+  return filters.features.every((key) => keys.has(key));
+}
+
+function bySort(sort: PropertyFilters["sort"]) {
+  if (sort === "recientes") return byListingOrder;
+  const direction = sort === "precio-asc" ? 1 : -1;
+  return (a: PropertyRecord, b: PropertyRecord): number => {
+    const priceA = a.price.amount;
+    const priceB = b.price.amount;
+    // "Precio a consultar" siempre al final.
+    if (priceA === null || priceB === null) {
+      if (priceA === priceB) return byListingOrder(a, b);
+      return priceA === null ? 1 : -1;
+    }
+    return (priceA - priceB) * direction || byListingOrder(a, b);
+  };
+}
+
+/** Listado público filtrado y ordenado. */
+export async function searchPublishedProperties(
+  filters: PropertyFilters,
+): Promise<PropertySummary[]> {
+  const today = todayInChile();
+  return propertiesFixture
+    .filter((property) => isPublished(property) && matchesFilters(property, filters, today))
+    .sort(bySort(filters.sort))
+    .map(toSummary);
+}
+
 export async function getPublishedPropertyBySlug(slug: string): Promise<PropertyDetail | null> {
   const property = propertiesFixture.find((item) => item.slug === slug && isPublished(item));
   return property ? toDetail(property) : null;
@@ -92,4 +156,9 @@ export async function listCommunes(): Promise<Commune[]> {
 
 export async function listBusinessTypes(): Promise<BusinessType[]> {
   return businessTypesFixture;
+}
+
+/** Características disponibles como filtro. */
+export async function listFilterableFeatures(): Promise<Feature[]> {
+  return featuresFixture.filter((feature) => feature.isFilterable);
 }
