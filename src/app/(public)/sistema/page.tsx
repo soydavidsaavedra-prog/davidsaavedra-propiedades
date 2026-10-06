@@ -38,7 +38,12 @@ const brandPalette = [
   { name: "night-soft", className: "bg-night-soft", value: "#252424", use: "Superficie Noche" },
   { name: "ivory", className: "bg-ivory", value: "#F7F5F1", use: "Fondo Día" },
   { name: "silver", className: "bg-silver", value: "#B8B4AE", use: "Texto secundario Noche" },
-  { name: "champagne", className: "bg-champagne", value: "#C9A57A", use: "Detalle de marca" },
+  {
+    name: "champagne",
+    className: "bg-champagne",
+    value: "#E4B77B",
+    use: "Detalle de marca (dorado oficial)",
+  },
   {
     name: "champagne-light",
     className: "bg-champagne-light",
