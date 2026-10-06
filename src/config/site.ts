@@ -19,7 +19,7 @@ export const siteConfig = {
     /** RUT del responsable. */
     taxId: "29.460.872-9" as string | null,
     /** Correo para solicitudes sobre datos personales. */
-    privacyEmail: "soydavidsaavedra@gmail.com" as string | null,
+    privacyEmail: "davidsaavedrapropiedades@gmail.com" as string | null,
     /** Fecha de la última actualización de la política (YYYY-MM-DD). */
     privacyUpdatedAt: "2026-10-06",
   },
