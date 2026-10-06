@@ -275,7 +275,7 @@ export const propertiesFixture: PropertyRecord[] = [
     status: "published",
     availability: "available",
     availableFrom: "2026-11-01",
-    price: { amount: 21, currency: "UF" },
+    price: { amount: 780000, currency: "CLP" },
     commonExpensesClp: 35000,
     guaranteeMonths: 2,
     minLeaseMonths: 24,

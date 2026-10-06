@@ -60,7 +60,10 @@ export type PropertyMedia = {
   id: string;
   kind: MediaKind;
   provider: MediaProvider;
-  /** Ruta en Storage (provider `storage`) o URL externa (YouTube/Vimeo). */
+  /**
+   * URL lista para usar en la interfaz: pública de Storage o externa
+   * (YouTube/Vimeo). La capa de datos resuelve la URL desde la ruta guardada.
+   */
   source: string;
   posterSource: string | null;
   alt: string;

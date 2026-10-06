@@ -42,8 +42,9 @@ profiles (auth.users) ── rol admin/agent
 - **Público vs. privado.** RLS filtra filas, no columnas. Por eso los datos
   internos (dirección exacta, comisión, notas, propietarios) están en tablas
   separadas, visibles solo para administradores.
-- **Precio en CLP o UF.** `price_amount` + `price_currency`; `null` = a consultar.
-  Presupuestos de leads en CLP.
+- **Precio en CLP.** Todas las propiedades actuales se publican en pesos.
+  `price_currency` (CLP por defecto) deja preparada la UF para ventas futuras;
+  `price_amount` `null` = a consultar. Presupuestos de leads en CLP.
 - **Ubicación pública aproximada por defecto** (`location_precision`).
 - **Código corto** `DS-0001` para referenciar propiedades en redes y WhatsApp.
 - **Leads públicos solo vía `submit_lead()`** (security definer): valida,

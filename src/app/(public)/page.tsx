@@ -1,15 +1,26 @@
-import { Container } from "@/components/ui/container";
-import { siteConfig } from "@/config/site";
+import type { Metadata } from "next";
+import { listPropertyTypes, listPublishedProperties } from "@/features/properties/queries";
+import { AgentBlock } from "./_components/agent-block";
+import { FeaturedProperties } from "./_components/featured-properties";
+import { HomeHero } from "./_components/home-hero";
+import { HowItWorks } from "./_components/how-it-works";
 
-// PROVISORIO: la Home definitiva (por intención) se construye en el paso 3.
-export default function HomePage() {
+export const metadata: Metadata = {
+  title: { absolute: "Locales comerciales en arriendo en La Ligua | David Saavedra Propiedades" },
+  description:
+    "Locales comerciales en arriendo en La Ligua, Región de Valparaíso. Fichas con fotografías, medidas y condiciones claras, y atención personalizada.",
+  alternates: { canonical: "/" },
+};
+
+export default async function HomePage() {
+  const [types, properties] = await Promise.all([listPropertyTypes(), listPublishedProperties()]);
+
   return (
-    <Container className="flex min-h-[60dvh] flex-col justify-center gap-4 py-16">
-      <p className="text-xs font-medium tracking-brand text-ink-muted">EN CONSTRUCCIÓN</p>
-      <h1 className="max-w-2xl text-display font-semibold">{siteConfig.name}</h1>
-      <p className="max-w-xl text-lg text-ink-soft">
-        Propiedades en {siteConfig.location.city}, {siteConfig.location.region}.
-      </p>
-    </Container>
+    <>
+      <HomeHero types={types} />
+      <FeaturedProperties properties={properties} />
+      <HowItWorks />
+      <AgentBlock />
+    </>
   );
 }
