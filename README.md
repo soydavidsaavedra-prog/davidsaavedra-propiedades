@@ -30,8 +30,10 @@ pnpm build
 El sitio se publica en Vercel desde la rama `main`; cada PR genera un preview.
 Base de datos: ver [`supabase/README.md`](supabase/README.md).
 
-1. **Importar el repositorio** en Vercel (framework Next.js, detectado solo).
-   Node 22 se toma de `engines` y pnpm de `packageManager`.
+1. **Crear un proyecto nuevo** en Vercel (Add New → Project → importar este
+   repositorio), independiente de **DS Catalog**: no reutilizar ese proyecto
+   ni sus variables, dominios o integraciones. Framework Next.js (detectado
+   solo); Node 22 se toma de `engines` y pnpm de `packageManager`.
 2. **Variables de entorno** (Project Settings → Environment Variables):
 
    | Variable                               | Production                 | Preview                 |
@@ -50,7 +52,10 @@ Base de datos: ver [`supabase/README.md`](supabase/README.md).
    proyecto de Supabase (São Paulo → `gru1`), para que cada consulta no cruce
    el continente.
 4. **Dominio:** agregar `davidsaavedra.cl` (y `www` con redirección al
-   principal) en Settings → Domains y crear los registros DNS que indica Vercel.
+   principal) en Settings → Domains del proyecto nuevo y crear los registros
+   DNS que indica Vercel. Si el dominio está asignado a DS Catalog, Vercel
+   pide quitarlo de ese proyecto primero: hacerlo recién al lanzar, porque
+   deja de responder allí.
 5. **Desplegar** y revisar en producción: `/`, `/propiedades`, una ficha,
    `/contacto` (enviar un lead de prueba), `/robots.txt` y `/sitemap.xml`.
 
