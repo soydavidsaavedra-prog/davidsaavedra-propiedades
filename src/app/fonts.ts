@@ -1,14 +1,15 @@
-import { Inter, Inter_Tight } from "next/font/google";
+import { Inter, Montserrat } from "next/font/google";
 
-// PROVISORIO: se reemplazan por las tipografías de la identidad de marca.
-export const fontBody = Inter({
+// Lectura, formularios y contenido funcional.
+export const fontInter = Inter({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-body",
+  variable: "--font-inter",
 });
 
-export const fontHeading = Inter_Tight({
+// Display, títulos y elementos de marca.
+export const fontMontserrat = Montserrat({
   subsets: ["latin"],
   display: "swap",
-  variable: "--font-heading",
+  variable: "--font-montserrat",
 });

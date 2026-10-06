@@ -1,10 +1,13 @@
 import { cn } from "@/lib/cn";
 
-export type BadgeTone = "neutral" | "brand" | "success" | "warning" | "danger" | "overlay";
+export type BadgeTone =
+  "neutral" | "brand" | "accent" | "success" | "warning" | "danger" | "overlay";
 
 const tones: Record<BadgeTone, string> = {
   neutral: "bg-surface-muted text-ink-soft",
-  brand: "bg-brand text-brand-contrast",
+  brand: "bg-primary text-primary-contrast",
+  // Contorno fino de marca (como la pastilla del banner).
+  accent: "border border-accent-line text-accent",
   success: "bg-success-soft text-success",
   warning: "bg-warning-soft text-warning",
   danger: "bg-danger-soft text-danger",

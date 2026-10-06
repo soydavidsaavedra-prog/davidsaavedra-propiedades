@@ -13,9 +13,9 @@ const base =
   "inline-flex items-center justify-center gap-2 font-medium whitespace-nowrap select-none transition-colors duration-150 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-[1.15em] [&_svg]:shrink-0";
 
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-brand text-brand-contrast hover:bg-brand-hover active:bg-brand-hover",
+  primary: "bg-primary text-primary-contrast hover:bg-primary-hover active:bg-primary-hover",
   secondary:
-    "border border-line-strong bg-surface text-ink hover:border-ink active:bg-surface-muted",
+    "border border-outline bg-transparent text-ink hover:border-ink active:bg-surface-muted",
   ghost: "text-ink hover:bg-surface-muted active:bg-surface-muted",
 };
 

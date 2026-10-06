@@ -36,7 +36,7 @@ export function Sheet({ open, onClose, title, children, footer }: SheetProps) {
         // Clic en la capa de fondo (fuera del contenido) cierra el panel.
         if (event.target === event.currentTarget) onClose();
       }}
-      className="m-0 mt-auto max-h-[90dvh] w-full max-w-none rounded-t-xl bg-surface p-0 text-ink shadow-raised backdrop:bg-ink/40 sm:m-auto sm:max-w-lg sm:rounded-xl"
+      className="m-0 mt-auto max-h-[90dvh] w-full max-w-none rounded-t-xl bg-surface p-0 text-ink shadow-raised backdrop:bg-night/50 sm:m-auto sm:max-w-lg sm:rounded-xl"
     >
       <div className="flex max-h-[90dvh] flex-col">
         <div className="flex items-center justify-between gap-4 border-b border-line py-2 pr-2 pl-5">

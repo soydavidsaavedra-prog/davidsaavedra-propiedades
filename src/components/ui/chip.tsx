@@ -13,8 +13,8 @@ export function Chip({ selected = false, className, type = "button", ...props }:
       className={cn(
         "inline-flex h-10 items-center gap-2 rounded-full border px-4 text-sm font-medium whitespace-nowrap transition-colors duration-150 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4",
         selected
-          ? "border-ink bg-ink text-white"
-          : "border-line-strong bg-surface text-ink hover:border-ink",
+          ? "border-primary bg-primary text-primary-contrast"
+          : "border-line-strong bg-transparent text-ink hover:border-ink",
         className,
       )}
       {...props}

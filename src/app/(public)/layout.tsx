@@ -8,7 +8,7 @@ export default function PublicLayout({ children }: Readonly<{ children: React.Re
       <SiteHeader />
       <main className="flex-1">{children}</main>
       {/* Espacio reservado para la barra inferior en móvil. */}
-      <div className="pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
+      <div className="theme-night pb-[calc(4rem+env(safe-area-inset-bottom))] md:pb-0">
         <SiteFooter />
       </div>
       <BottomNav />

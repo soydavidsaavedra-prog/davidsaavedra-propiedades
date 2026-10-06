@@ -3,38 +3,48 @@
 /*
  * Tokens del sistema visual — DAVID SAAVEDRA | PROPIEDADES
  *
- * PROVISORIO: paleta neutra y arquitectónica (piedra, hormigón, grafito)
- * mientras se incorporan los recursos de identidad existentes de la marca.
- * Los componentes usan solo nombres semánticos (canvas, ink, brand…), por lo
- * que ajustar la identidad se hace aquí, sin tocar componentes.
+ * Dos modos:
+ *  - Día (por defecto): listados, información, formularios, contenido funcional.
+ *  - Noche (`.theme-night`): hero, bloques de marca, presentación personal,
+ *    galerías destacadas y footer.
  *
- * La paleta por defecto de Tailwind se desactiva a propósito para que la UI
- * no use colores fuera del sistema.
+ * Los componentes usan solo tokens semánticos (canvas, surface, ink, accent…).
+ * `.theme-night` redefine esos mismos tokens, así cualquier componente se adapta
+ * al modo de la sección que lo contiene sin variantes adicionales.
+ *
+ * Champagne es color de detalle (líneas, íconos, acentos), nunca relleno de CTA.
+ * Sobre fondo claro el acento de texto es bronze (contraste AA).
  */
 @theme {
   --color-*: initial;
 
   --color-white: #ffffff;
 
-  /* Superficies */
-  --color-canvas: #f6f5f2;
+  /* Paleta de marca (valores fijos) */
+  --color-night: #0f0f0e;
+  --color-night-soft: #252424;
+  --color-ivory: #f7f5f1;
+  --color-silver: #b8b4ae;
+  --color-champagne: #c9a57a;
+  --color-champagne-light: #e9cda4;
+  --color-bronze: #7a5f40;
+
+  /* Semánticos — modo Día */
+  --color-canvas: #f7f5f1;
   --color-surface: #ffffff;
-  --color-surface-muted: #eceae5;
-  --color-line: #e0ddd6;
-  --color-line-strong: #bdb8ae;
+  --color-surface-muted: #edeae4;
+  --color-line: #e3dfd8;
+  --color-line-strong: #c4bfb7;
+  --color-ink: #0f0f0e;
+  --color-ink-soft: #46433f;
+  --color-ink-muted: #67635c;
+  --color-accent: #7a5f40;
+  --color-accent-line: #c9a57a;
+  --color-primary: #0f0f0e;
+  --color-primary-hover: #2a2826;
+  --color-primary-contrast: #f7f5f1;
+  --color-outline: #c4bfb7;
 
-  /* Texto */
-  --color-ink: #1b1b19;
-  --color-ink-soft: #45433e;
-  --color-ink-muted: #6b675f;
-
-  /* Marca (provisorio: grafito; se reemplaza al recibir la identidad) */
-  --color-brand: #1b1b19;
-  --color-brand-hover: #33322e;
-  --color-brand-contrast: #ffffff;
-  --color-accent: #73644f;
-
-  /* Estados */
   --color-success: #2e6a4c;
   --color-success-soft: #e3eee7;
   --color-warning: #8a5a12;
@@ -43,34 +53,71 @@
   --color-danger-soft: #f5e1de;
 
   /* Tipografía (familias inyectadas por next/font en el layout raíz) */
-  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
-  --font-display: var(--font-heading), var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-montserrat), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-  --text-display: clamp(2.25rem, 1.5rem + 3.2vw, 4rem);
-  --text-display--line-height: 1.04;
-  --text-display--letter-spacing: -0.025em;
+  --text-display: clamp(2.25rem, 1.4rem + 3.6vw, 4.25rem);
+  --text-display--line-height: 1.05;
+  --text-display--letter-spacing: -0.02em;
 
   /* Forma: radios contenidos, coherentes con una estética arquitectónica */
-  --radius-sm: 0.375rem;
-  --radius-md: 0.625rem;
-  --radius-lg: 0.875rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
   --radius-xl: 1.25rem;
 
-  --shadow-soft: 0 1px 2px rgb(27 27 25 / 0.05), 0 2px 8px rgb(27 27 25 / 0.04);
-  --shadow-raised: 0 4px 12px rgb(27 27 25 / 0.08), 0 16px 40px rgb(27 27 25 / 0.08);
+  --shadow-soft: 0 1px 2px rgb(15 15 14 / 0.05), 0 2px 8px rgb(15 15 14 / 0.04);
+  --shadow-raised: 0 4px 12px rgb(15 15 14 / 0.08), 0 16px 40px rgb(15 15 14 / 0.1);
 
   --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
+
+@custom-variant night (&:where(.theme-night, .theme-night *));
 
 @utility pb-safe {
   padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Espaciado amplio de marca para etiquetas en mayúsculas ("PROPIEDADES"). */
 @utility tracking-brand {
-  letter-spacing: 0.24em;
+  letter-spacing: 0.32em;
+}
+
+/* Corte a 45° en la esquina superior izquierda, del lenguaje del monograma. */
+@utility corner-cut {
+  clip-path: polygon(0.5rem 0, 100% 0, 100% 100%, 0 100%, 0 0.5rem);
 }
 
 @layer base {
+  /* Modo Noche: redefine los tokens semánticos dentro de la sección. */
+  .theme-night {
+    --color-canvas: #0f0f0e;
+    --color-surface: #1a1918;
+    --color-surface-muted: #252424;
+    --color-line: #2f2d2b;
+    --color-line-strong: #4a4743;
+    --color-ink: #f7f5f1;
+    --color-ink-soft: #d6d2cb;
+    --color-ink-muted: #b8b4ae;
+    --color-accent: #c9a57a;
+    --color-accent-line: #c9a57a;
+    --color-primary: #f7f5f1;
+    --color-primary-hover: #e6e2db;
+    --color-primary-contrast: #0f0f0e;
+    --color-outline: #c9a57a;
+
+    --color-success: #8cc7a5;
+    --color-success-soft: #1b2a22;
+    --color-warning: #e2b36b;
+    --color-warning-soft: #2e2416;
+    --color-danger: #eb978a;
+    --color-danger-soft: #331d1a;
+
+    color-scheme: dark;
+    background-color: var(--color-canvas);
+    color: var(--color-ink);
+  }
+
   html {
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
@@ -85,7 +132,7 @@
   h2,
   h3,
   h4 {
-    @apply font-display text-balance;
+    @apply font-display tracking-tight text-balance;
   }
 
   :focus-visible {
@@ -93,7 +140,7 @@
   }
 
   ::selection {
-    @apply bg-ink text-white;
+    @apply bg-champagne text-night;
   }
 
   @media (prefers-reduced-motion: reduce) {

@@ -8,7 +8,7 @@ type IconButtonProps = Omit<React.ComponentProps<"button">, "aria-label"> & {
 
 const variants = {
   ghost: "text-ink hover:bg-surface-muted",
-  secondary: "border border-line-strong bg-surface text-ink hover:border-ink",
+  secondary: "border border-outline text-ink hover:border-ink",
   overlay: "bg-white/90 text-ink shadow-soft backdrop-blur hover:bg-white",
 } as const;
 
