@@ -25,6 +25,26 @@ pnpm typecheck
 pnpm build
 ```
 
+## Panel de administración
+
+`/admin` (no se indexa): ingreso con correo y contraseña de Supabase Auth y
+gestión de propiedades.
+
+- **Propiedades:** crear (quedan en borrador), editar todos los datos públicos
+  y los internos (dirección exacta, comisión, llaves, notas), publicar, pasar a
+  borrador, archivar y eliminar (solo no publicadas). Publicar exige una foto
+  de portada. Cada cambio regenera el sitio público al instante.
+- **Fotos y videos:** se suben desde el navegador directo al Storage
+  (`property-media/{id}/…`); las fotos de más de 2400 px se reducen antes de
+  subir. Portada, orden, texto alternativo, videos MP4/WebM (hasta 50 MB) y
+  enlaces de YouTube o Vimeo.
+- **Seguridad:** `src/proxy.ts` renueva la sesión y redirige a `/admin/ingresar`
+  (filtro optimista); cada página y Server Action vuelve a verificar el rol
+  `admin` en `profiles` (`src/features/admin/session.ts`), y RLS lo exige en la
+  base de datos y el Storage. La app nunca usa la clave `service_role`.
+- **Acceso:** solo usuarios con `profiles.role = 'admin'` (ver
+  [`supabase/README.md`](supabase/README.md)). Un usuario sin ese rol no entra.
+
 ## Despliegue (Vercel)
 
 El sitio se publica en Vercel desde la rama `main`; cada PR genera un preview.
