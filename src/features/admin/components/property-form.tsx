@@ -12,10 +12,14 @@ import {
   PROPERTY_AVAILABILITIES,
   PROPERTY_OPERATIONS,
 } from "@/features/properties/constants";
+import { siteConfig } from "@/config/site";
 import { cn } from "@/lib/cn";
 import { savePropertyAction, type PropertyFormState } from "../properties/actions";
 import { toFormValues } from "../properties/form";
 import type { AdminPropertyDetail, PropertyFormOptions } from "../properties/types";
+
+/** Dominio del sitio sin protocolo, para mostrar la dirección de la ficha. */
+const siteHost = siteConfig.url.replace(/^https?:\/\//, "");
 
 type PropertyFormProps = {
   property?: AdminPropertyDetail;
@@ -159,7 +163,7 @@ export function PropertyForm({ property, options }: PropertyFormProps) {
           label="Dirección web (slug)"
           hint={
             property
-              ? `davidsaavedra.cl/propiedades/${property.slug}. Cambiarla en una propiedad publicada rompe los enlaces ya compartidos.`
+              ? `${siteHost}/propiedades/${property.slug}. Cambiarla en una propiedad publicada rompe los enlaces ya compartidos.`
               : "Se genera a partir del título si la dejas vacía."
           }
           maxLength={80}
