@@ -68,12 +68,12 @@ Base de datos: ver [`supabase/README.md`](supabase/README.md).
    solo); Node 22 se toma de `engines` y pnpm de `packageManager`.
 2. **Variables de entorno** (Project Settings → Environment Variables):
 
-   | Variable                               | Production                 | Preview                 |
-   | -------------------------------------- | -------------------------- | ----------------------- |
-   | `NEXT_PUBLIC_SITE_URL`                 | `https://davidsaavedra.cl` | URL del preview o vacía |
-   | `NEXT_PUBLIC_SUPABASE_URL`             | obligatoria                | recomendada             |
-   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | obligatoria                | recomendada             |
-   | `WHATSAPP_NUMBER`                      | recomendada                | opcional                |
+   | Variable                               | Production                     | Preview                 |
+   | -------------------------------------- | ------------------------------ | ----------------------- |
+   | `NEXT_PUBLIC_SITE_URL`                 | `https://davidsaavedra.cl`     | URL del preview o vacía |
+   | `NEXT_PUBLIC_SUPABASE_URL`             | obligatoria                    | recomendada             |
+   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | obligatoria                    | recomendada             |
+   | `WHATSAPP_NUMBER`                      | opcional (hay uno por defecto) | opcional                |
 
    En producción, si falta alguna obligatoria, el build se detiene
    (`next.config.ts`). **Nunca** cargar la clave `service_role`.
@@ -102,9 +102,7 @@ Base de datos: ver [`supabase/README.md`](supabase/README.md).
 
 ### Antes de lanzar
 
-- [ ] Completar `siteConfig.legal.taxId` (RUT) y `privacyEmail` en
-      `src/config/site.ts` (la política de privacidad los muestra si existen).
-- [ ] Configurar `WHATSAPP_NUMBER`.
+- [x] RUT, correo de privacidad y WhatsApp en `src/config/site.ts`.
 - [ ] Borrar los leads de prueba en Supabase.
 - [ ] Publicar al menos una propiedad (o confirmar que se lanza con los estados
       vacíos).
