@@ -19,7 +19,9 @@
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
+    "heic-to": "^1.6.5",
     "lucide-react": "^1.52.0",
+    "mediabunny": "^1.61.3",
     "next": "16.3.8",
     "react": "19.3.0",
     "react-dom": "19.3.0",

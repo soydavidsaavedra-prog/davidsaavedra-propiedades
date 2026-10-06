@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AlarmClock, Inbox, Search } from "lucide-react";
+import { AlarmClock, Inbox, Plus, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonStyles } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input, Select } from "@/components/ui/input";
 import {
@@ -48,12 +48,23 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-3xl font-semibold">Leads</h1>
-        <p className="text-ink-muted">
-          Consultas del sitio y contactos en gestión, con su estado y próxima acción.
-        </p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-semibold">Leads</h1>
+          <p className="text-ink-muted">
+            Consultas del sitio y contactos en gestión, con su estado y próxima acción.
+          </p>
+        </div>
+        <Link href="/admin/leads/nuevo" className={buttonStyles()}>
+          <Plus /> Nuevo lead
+        </Link>
       </div>
+
+      {params.eliminado && (
+        <p role="status" className="rounded-lg bg-surface-muted px-4 py-3 text-sm">
+          Lead eliminado con todo su historial.
+        </p>
+      )}
 
       <CleanGetForm
         action="/admin/leads"

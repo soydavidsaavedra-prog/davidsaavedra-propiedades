@@ -58,6 +58,7 @@ export type AdminLeadDetail = {
   lostReason: string | null;
   source: LeadSource;
   utm: { source: string | null; medium: string | null; campaign: string | null };
+  businessTypeId: string | null;
   businessTypeName: string | null;
   businessDescription: string | null;
   budgetMinClp: number | null;

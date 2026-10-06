@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Mail,
   MessageCircle,
+  Pencil,
   Phone,
   Workflow,
 } from "lucide-react";
@@ -33,7 +34,10 @@ import { formatCLP } from "@/lib/format";
 import { formatPhone } from "@/lib/phone";
 import { whatsappUrl } from "@/lib/whatsapp";
 
-type PageProps = { params: Promise<{ id: string }> };
+type PageProps = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -102,8 +106,8 @@ function TimelineItem({ entry }: { entry: LeadTimelineEntry }) {
   );
 }
 
-export default async function LeadPage({ params }: PageProps) {
-  const { id } = await params;
+export default async function LeadPage({ params, searchParams }: PageProps) {
+  const [{ id }, query] = await Promise.all([params, searchParams]);
   if (!UUID.test(id)) notFound();
 
   const context = await requireAdmin();
@@ -148,7 +152,15 @@ export default async function LeadPage({ params }: PageProps) {
           <Badge tone={leadStatusTones[lead.status]}>{leadStatusLabels[lead.status]}</Badge>
           <Badge>{leadTypeLabels[lead.leadType]}</Badge>
         </div>
-        <h1 className="text-2xl font-semibold sm:text-3xl">{lead.fullName}</h1>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <h1 className="text-2xl font-semibold sm:text-3xl">{lead.fullName}</h1>
+          <Link
+            href={`/admin/leads/${lead.id}/editar`}
+            className={buttonStyles({ size: "sm", variant: "ghost" })}
+          >
+            <Pencil /> Editar datos
+          </Link>
+        </div>
         <div className="flex flex-wrap gap-2">
           <a href={`tel:${lead.phone}`} className={buttonStyles({ size: "sm" })}>
             <Phone /> {formatPhone(lead.phone)}
@@ -171,6 +183,15 @@ export default async function LeadPage({ params }: PageProps) {
           )}
         </div>
       </div>
+
+      {query.creado && (
+        <p
+          role="status"
+          className="rounded-lg bg-success-soft px-4 py-3 text-sm font-medium text-success"
+        >
+          Lead creado. Registra el primer contacto en el timeline y define la próxima acción.
+        </p>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
         <div className="flex flex-col gap-6">

@@ -35,16 +35,21 @@ gestión de propiedades y leads.
   borrador, archivar y eliminar (solo no publicadas). Publicar exige una foto
   de portada. Cada cambio regenera el sitio público al instante.
 - **Fotos y videos:** se suben desde el navegador directo al Storage
-  (`property-media/{id}/…`); las fotos de más de 2400 px se reducen antes de
-  subir. Portada, orden, texto alternativo, videos MP4/WebM (hasta 50 MB) y
-  enlaces de YouTube o Vimeo.
-- **Leads** (`/admin/leads`): bandeja con vistas (en gestión, nuevos, acción
-  vencida, ganados, perdidos), búsqueda por nombre o teléfono y filtros por tipo
-  y origen. La ficha muestra los datos de contacto (llamar, WhatsApp, correo),
-  la etapa del embudo (perder exige motivo; el historial lo registra un
-  trigger), la próxima acción con fecha, el timeline (notas, llamadas,
-  WhatsApp, correos, reuniones, consultas web y cambios de etapa) y las
-  propiedades vinculadas (consultó, sugerida, visitada, descartada).
+  (`property-media/{id}/…`), sin pasar por el servidor. Fotos JPG, PNG, WebP o
+  HEIC del iPhone (se convierte a JPG); las de más de 2400 px o 3 MB se reducen
+  a JPG. Videos MOV o MP4: se recodifican a MP4 H.264 (lado mayor de 1920 px)
+  con el códec del navegador (WebCodecs; Chrome, Edge o Safari actualizados) y
+  deben quedar bajo 50 MB. Portada, orden, texto alternativo y enlaces de
+  YouTube o Vimeo. Las librerías de conversión (`heic-to`, `mediabunny`) se
+  cargan solo al elegir un archivo que las necesita
+  (`src/features/admin/media/prepare.ts`).
+- **Leads (CRM):** bandeja con vistas (abiertos, nuevos, vencidos, arrendados,
+  perdidos), búsqueda y filtros; ficha con contacto directo, etapa del embudo
+  (perdido exige motivo), próxima acción, timeline de notas e interacciones con
+  el historial de etapas y propiedades vinculadas. Alta manual de contactos
+  que llegan por WhatsApp, redes o en persona (sin duplicar un lead abierto con
+  el mismo teléfono), edición de datos y eliminación con todo su historial
+  cuando el titular lo pide (Ley 21.719).
 - **Seguridad:** `src/proxy.ts` renueva la sesión y redirige a `/admin/ingresar`
   (filtro optimista); cada página y Server Action vuelve a verificar el rol
   `admin` en `profiles` (`src/features/admin/session.ts`), y RLS lo exige en la

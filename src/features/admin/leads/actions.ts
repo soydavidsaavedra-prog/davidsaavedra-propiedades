@@ -1,6 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { redirect } from "next/navigation";
 import {
   LEAD_ACTIVITY_TYPES,
   LEAD_PROPERTY_RELATIONS,
@@ -10,6 +11,7 @@ import {
   type LeadStatus,
 } from "@/features/leads/constants";
 import { assertAdmin } from "../session";
+import { parseLeadAdminForm, toLeadColumns, type LeadFieldErrors } from "./form";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -159,4 +161,115 @@ export async function removeLeadPropertyAction(
   }
   refresh();
   return { ok: true };
+}
+
+/** Valores enviados, para restaurar el formulario si hay que corregir algo. */
+export type LeadFormState =
+  | { status: "idle" }
+  | { status: "saved"; savedAt: number }
+  | {
+      status: "invalid" | "error";
+      message: string;
+      fieldErrors: LeadFieldErrors;
+      values: Record<string, string>;
+      attempt: number;
+      /** Lead abierto con el mismo teléfono (alta manual). */
+      duplicateId?: string;
+    };
+
+function leadFailure(
+  formData: FormData,
+  status: "invalid" | "error",
+  message: string,
+  fieldErrors: LeadFieldErrors = {},
+  duplicateId?: string,
+): LeadFormState {
+  const values: Record<string, string> = {};
+  for (const [key, value] of formData.entries()) {
+    if (!key.startsWith("$") && typeof value === "string") values[key] = value.slice(0, 2000);
+  }
+  return { status, message, fieldErrors, values, attempt: Date.now(), duplicateId };
+}
+
+/**
+ * Alta manual (sin `id`: contactos por WhatsApp, Instagram, presenciales…) o
+ * edición de los datos de un lead. El alta no duplica un lead abierto con el
+ * mismo teléfono.
+ */
+export async function saveLeadAction(
+  _previous: LeadFormState,
+  formData: FormData,
+): Promise<LeadFormState> {
+  const { supabase, user } = await assertAdmin();
+  const parsed = parseLeadAdminForm(formData);
+  if (!parsed.ok) {
+    return leadFailure(formData, "invalid", "Revisa los campos marcados.", parsed.fieldErrors);
+  }
+  const data = parsed.data;
+  const rawId = formData.get("id");
+  const id = typeof rawId === "string" && UUID.test(rawId) ? rawId : null;
+
+  if (id) {
+    const { error } = await supabase.from("leads").update(toLeadColumns(data)).eq("id", id);
+    if (error) {
+      console.error("[admin] Error al actualizar el lead:", error.message);
+      return leadFailure(formData, "error", "No se pudo guardar. Inténtalo de nuevo.");
+    }
+    refresh();
+    return { status: "saved", savedAt: Date.now() };
+  }
+
+  const { data: open } = await supabase
+    .from("leads")
+    .select("id")
+    .eq("phone", data.phone)
+    .not("status", "in", "(won,lost)")
+    .limit(1)
+    .maybeSingle<{ id: string }>();
+  if (open) {
+    return leadFailure(
+      formData,
+      "invalid",
+      "Ya hay un lead abierto con este teléfono. Registra la nueva consulta en su timeline.",
+      { telefono: "Teléfono ya registrado en un lead abierto." },
+      open.id,
+    );
+  }
+
+  const { data: created, error } = await supabase
+    .from("leads")
+    .insert({
+      ...toLeadColumns(data),
+      assigned_to: user.id,
+      consent_at: data.consent ? new Date().toISOString() : null,
+    })
+    .select("id")
+    .single<{ id: string }>();
+  if (error) {
+    console.error("[admin] Error al crear el lead:", error.message);
+    return leadFailure(formData, "error", "No se pudo crear el lead. Inténtalo de nuevo.");
+  }
+
+  if (data.propertyId) {
+    const { error: linkError } = await supabase
+      .from("lead_properties")
+      .insert({ lead_id: created.id, property_id: data.propertyId, relation: "inquired" });
+    if (linkError) console.error("[admin] Error al vincular la propiedad:", linkError.message);
+  }
+  redirect(`/admin/leads/${created.id}?creado=1`);
+}
+
+/**
+ * Elimina un lead con todo su historial (timeline, etapas, propiedades y
+ * visitas): solicitud de supresión del titular de los datos (Ley 21.719).
+ */
+export async function deleteLeadAction(id: string): Promise<LeadActionResult> {
+  const { supabase } = await assertAdmin();
+  if (!UUID.test(id)) return { ok: false, message: "Solicitud no válida." };
+  const { error } = await supabase.from("leads").delete().eq("id", id);
+  if (error) {
+    console.error("[admin] Error al eliminar el lead:", error.message);
+    return { ok: false, message: "No se pudo eliminar el lead." };
+  }
+  redirect("/admin/leads?eliminado=1");
 }
