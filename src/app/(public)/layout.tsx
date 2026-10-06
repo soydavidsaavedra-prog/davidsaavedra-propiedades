@@ -1,3 +1,4 @@
+import { UtmCapture } from "@/components/analytics/utm-capture";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
@@ -20,6 +21,7 @@ export default function PublicLayout({ children }: Readonly<{ children: React.Re
         <SiteFooter />
       </div>
       <BottomNav />
+      <UtmCapture />
     </div>
   );
 }

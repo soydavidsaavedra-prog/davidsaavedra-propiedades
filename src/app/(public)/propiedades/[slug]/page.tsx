@@ -20,9 +20,11 @@ import { PropertyGallery } from "@/features/properties/components/detail/propert
 import { PropertyKeyFacts } from "@/features/properties/components/detail/property-key-facts";
 import { PropertyVideos } from "@/features/properties/components/detail/property-videos";
 import { PropertyCard } from "@/features/properties/components/property-card";
+import { LeadForm } from "@/features/leads/components/lead-form";
 import { formatPrice } from "@/features/properties/format";
 import {
   getPublishedPropertyBySlug,
+  listBusinessTypes,
   listPublishedProperties,
   listRelatedProperties,
 } from "@/features/properties/queries";
@@ -87,7 +89,10 @@ export default async function PropertyPage({ params }: PageProps) {
   if (!property) notFound();
 
   const today = todayInChile();
-  const related = await listRelatedProperties(property);
+  const [related, businessTypes] = await Promise.all([
+    listRelatedProperties(property),
+    listBusinessTypes(),
+  ]);
   const videos = property.media.filter((media) => media.kind === "video");
   const location = [property.commune.name, property.sector].filter(Boolean).join(" · ");
   const open = acceptsInquiries(property);
@@ -227,33 +232,32 @@ export default async function PropertyPage({ params }: PageProps) {
               )}
             </Section>
 
-            <Section title="¿Te interesa esta propiedad?" id="visitar">
-              <div className="theme-night flex flex-col gap-5 rounded-xl p-6 sm:flex-row sm:items-center">
-                <Image
-                  src={brandAssets.symbol.src}
-                  alt=""
-                  width={64}
-                  height={64}
-                  unoptimized
-                  className="size-16 shrink-0 rounded-full ring-1 ring-accent-line ring-offset-4 ring-offset-canvas"
-                />
-                <div className="flex flex-1 flex-col gap-1.5">
-                  <SectionLabel>Tu contacto directo</SectionLabel>
-                  <p className="font-display text-xl font-semibold">David Saavedra</p>
-                  <p className="text-ink-soft">
-                    Escríbeme indicando el código {property.code} y coordinamos una visita.
-                  </p>
+            {open && (
+              <Section title="Quiero visitar esta propiedad" id="visitar">
+                <div className="grid gap-6 rounded-xl border border-line bg-surface p-5 sm:p-6 md:grid-cols-[1fr_15rem] md:gap-8">
+                  <LeadForm
+                    propertyId={property.id}
+                    propertyCode={property.code}
+                    businessTypes={businessTypes}
+                  />
+                  <aside className="theme-night flex flex-col gap-3 self-start rounded-lg p-5">
+                    <Image
+                      src={brandAssets.symbol.src}
+                      alt=""
+                      width={56}
+                      height={56}
+                      unoptimized
+                      className="size-14 rounded-full ring-1 ring-accent-line ring-offset-4 ring-offset-canvas"
+                    />
+                    <SectionLabel>Tu contacto directo</SectionLabel>
+                    <p className="font-display text-lg font-semibold">David Saavedra</p>
+                    <p className="text-sm text-ink-soft">
+                      Reviso cada solicitud personalmente y te escribo para coordinar día y hora.
+                    </p>
+                  </aside>
                 </div>
-                <a
-                  href={siteConfig.social.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={buttonStyles({ variant: "secondary" })}
-                >
-                  {siteConfig.social.handle}
-                </a>
-              </div>
-            </Section>
+              </Section>
+            )}
           </article>
 
           <aside aria-label="Precio y contacto" className="hidden lg:block">

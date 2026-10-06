@@ -4,6 +4,8 @@ export const siteConfig = {
   description:
     "Arriendo de propiedades y locales comerciales en La Ligua, Región de Valparaíso. Atención personalizada, información clara y producción audiovisual profesional.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  /** Número de WhatsApp (solo dígitos, con código de país). Sin configurar, no se ofrece WhatsApp. */
+  whatsappNumber: process.env.WHATSAPP_NUMBER?.replace(/\D/g, "") || null,
   locale: "es_CL",
   location: {
     city: "La Ligua",

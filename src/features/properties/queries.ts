@@ -136,6 +136,12 @@ export async function searchPublishedProperties(
     .map(toSummary);
 }
 
+/** Propiedad publicada por id (p. ej. para validar un formulario de interés). */
+export async function getPublishedPropertyById(id: string): Promise<PropertySummary | null> {
+  const property = propertiesFixture.find((item) => item.id === id && isPublished(item));
+  return property ? toSummary(property) : null;
+}
+
 export async function getPublishedPropertyBySlug(slug: string): Promise<PropertyDetail | null> {
   const property = propertiesFixture.find((item) => item.slug === slug && isPublished(item));
   return property ? toDetail(property) : null;
