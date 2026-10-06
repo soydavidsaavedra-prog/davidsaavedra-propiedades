@@ -1,6 +1,6 @@
 # David Saavedra | Propiedades
 
-Plataforma inmobiliaria de [davidsaavedra.cl](https://davidsaavedra.cl). Next.js (App Router),
+Plataforma inmobiliaria de David Saavedra | Propiedades. Next.js (App Router),
 TypeScript estricto y Tailwind CSS v4.
 
 ## Desarrollo
@@ -62,18 +62,16 @@ gestión de propiedades y leads.
 El sitio se publica en Vercel desde la rama `main`; cada PR genera un preview.
 Base de datos: ver [`supabase/README.md`](supabase/README.md).
 
-1. **Crear un proyecto nuevo** en Vercel (Add New → Project → importar este
-   repositorio), independiente de **DS Catalog**: no reutilizar ese proyecto
-   ni sus variables, dominios o integraciones. Framework Next.js (detectado
+1. **Proyecto en Vercel** propio de este repositorio. Framework Next.js (detectado
    solo); Node 22 se toma de `engines` y pnpm de `packageManager`.
 2. **Variables de entorno** (Project Settings → Environment Variables):
 
-   | Variable                               | Production                 | Preview                 |
-   | -------------------------------------- | -------------------------- | ----------------------- |
-   | `NEXT_PUBLIC_SITE_URL`                 | `https://davidsaavedra.cl` | URL del preview o vacía |
-   | `NEXT_PUBLIC_SUPABASE_URL`             | obligatoria                | recomendada             |
-   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | obligatoria                | recomendada             |
-   | `WHATSAPP_NUMBER`                      | recomendada                | opcional                |
+   | Variable                               | Production                     | Preview                 |
+   | -------------------------------------- | ------------------------------ | ----------------------- |
+   | `NEXT_PUBLIC_SITE_URL`                 | dirección pública del sitio    | URL del preview o vacía |
+   | `NEXT_PUBLIC_SUPABASE_URL`             | obligatoria                    | recomendada             |
+   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | obligatoria                    | recomendada             |
+   | `WHATSAPP_NUMBER`                      | opcional (hay uno por defecto) | opcional                |
 
    En producción, si falta alguna obligatoria, el build se detiene
    (`next.config.ts`). **Nunca** cargar la clave `service_role`.
@@ -83,11 +81,11 @@ Base de datos: ver [`supabase/README.md`](supabase/README.md).
 3. **Región de funciones** (Settings → Functions): la misma región que el
    proyecto de Supabase (São Paulo → `gru1`), para que cada consulta no cruce
    el continente.
-4. **Dominio:** agregar `davidsaavedra.cl` (y `www` con redirección al
-   principal) en Settings → Domains del proyecto nuevo y crear los registros
-   DNS que indica Vercel. Si el dominio está asignado a DS Catalog, Vercel
-   pide quitarlo de ese proyecto primero: hacerlo recién al lanzar, porque
-   deja de responder allí.
+4. **Dirección del sitio:** sin dominio propio, el sitio funciona en la
+   dirección gratuita de Vercel (`https://<proyecto>.vercel.app`), con HTTPS e
+   indexable por Google; `NEXT_PUBLIC_SITE_URL` debe ser esa dirección. Para
+   usar un dominio propio más adelante: agregarlo en Settings → Domains, crear
+   los registros DNS que indica Vercel, cambiar `NEXT_PUBLIC_SITE_URL` y volver a desplegar.
 5. **Desplegar** y revisar en producción: `/`, `/propiedades`, una ficha,
    `/contacto` (enviar un lead de prueba), `/robots.txt` y `/sitemap.xml`.
 
@@ -102,9 +100,7 @@ Base de datos: ver [`supabase/README.md`](supabase/README.md).
 
 ### Antes de lanzar
 
-- [ ] Completar `siteConfig.legal.taxId` (RUT) y `privacyEmail` en
-      `src/config/site.ts` (la política de privacidad los muestra si existen).
-- [ ] Configurar `WHATSAPP_NUMBER`.
+- [x] RUT, correo de privacidad y WhatsApp en `src/config/site.ts`.
 - [ ] Borrar los leads de prueba en Supabase.
 - [ ] Publicar al menos una propiedad (o confirmar que se lanza con los estados
       vacíos).

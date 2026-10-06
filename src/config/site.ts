@@ -4,8 +4,9 @@ export const siteConfig = {
   description:
     "Arriendo de propiedades y locales comerciales en La Ligua, Región de Valparaíso. Atención personalizada, información clara y producción audiovisual profesional.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
-  /** Número de WhatsApp (solo dígitos, con código de país). Sin configurar, no se ofrece WhatsApp. */
-  whatsappNumber: process.env.WHATSAPP_NUMBER?.replace(/\D/g, "") || null,
+  /** WhatsApp de contacto (solo dígitos, con código de país). `WHATSAPP_NUMBER` lo reemplaza. */
+  whatsappNumber: (process.env.WHATSAPP_NUMBER?.replace(/\D/g, "") || "56920589553") as
+    string | null,
   locale: "es_CL",
   location: {
     city: "La Ligua",
@@ -15,10 +16,10 @@ export const siteConfig = {
   /** Datos del responsable del tratamiento de datos personales (política de privacidad). */
   legal: {
     controller: "David Saavedra",
-    /** RUT del responsable (persona natural o empresa). Pendiente de confirmar. */
-    taxId: null as string | null,
-    /** Correo para solicitudes sobre datos personales. Pendiente de confirmar. */
-    privacyEmail: null as string | null,
+    /** RUT del responsable. */
+    taxId: "29.460.872-9" as string | null,
+    /** Correo para solicitudes sobre datos personales. */
+    privacyEmail: "davidsaavedrapropiedades@gmail.com" as string | null,
     /** Fecha de la última actualización de la política (YYYY-MM-DD). */
     privacyUpdatedAt: "2026-10-06",
   },
