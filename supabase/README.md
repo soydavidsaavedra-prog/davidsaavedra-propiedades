@@ -1,8 +1,9 @@
 # Base de datos (Supabase / PostgreSQL)
 
-> **Estado:** migraciones escritas y validadas sintácticamente (parser oficial de
-> PostgreSQL). **No se han ejecutado** contra ninguna base de datos. La conexión
-> a Supabase queda pendiente de aprobación.
+> **Estado:** migraciones validadas en un PostgreSQL 17 local con la batería
+> de pruebas de seguridad (`supabase/tests/run.sh`, 39 pruebas). La aplicación
+> ya lee y escribe en Supabase cuando están las variables de entorno. **Aún no
+> se ha conectado ni migrado ningún proyecto real de Supabase.**
 
 ## Migraciones (orden de ejecución)
 
@@ -60,12 +61,28 @@ profiles (auth.users) ── rol admin/agent
   m², características, usos y presupuesto/rubro del lead). No requiere tablas
   nuevas en esta etapa.
 
-## Pendiente al conectar Supabase
+## Pruebas de seguridad
 
-1. Crear el proyecto y aplicar migraciones (`supabase db push`) + `seed.sql`.
-2. Desactivar el registro público en Auth y crear el usuario administrador
-   (`update profiles set role = 'admin' where id = …`).
-3. Generar tipos: `supabase gen types typescript` → `src/types/database.ts`.
-4. Reemplazar la implementación de `src/features/properties/queries.ts`
-   (hoy sobre fixtures) por consultas a Supabase.
-5. Probar RLS: el rol `anon` no debe leer leads, propietarios ni datos internos.
+```bash
+PGHOST=localhost PGPORT=5432 PGUSER=postgres supabase/tests/run.sh
+```
+
+Crea una base desechable (`TEST_DB`, por defecto `ds_test`), simula lo mínimo
+de Supabase y verifica, por rol: el público solo ve propiedades publicadas y
+catálogos; no ve leads, propietarios ni datos internos; los leads entran solo
+por `submit_lead()` (consentimiento, validación, deduplicación y límite de
+abuso); un usuario sin rol de administración no puede ascenderse; el historial
+de estados lo escribe solo el trigger. **No usar contra la base de producción.**
+
+## Conectar el proyecto de Supabase
+
+1. Crear el proyecto en supabase.com (región São Paulo, la más cercana a Chile).
+2. Aplicar las migraciones en orden y luego `seed.sql`: con la CLI
+   (`supabase link` + `supabase db push`) o pegándolas en el SQL Editor.
+3. En Authentication: desactivar el registro público; crear el usuario
+   administrador y luego `update public.profiles set role = 'admin' where id = '<uuid>';`.
+4. Variables de entorno de la aplicación (Project Settings → API):
+   `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+   La clave publishable es pública; **nunca** usar la `service_role` en la app.
+5. Generar tipos (`supabase gen types typescript`) para reemplazar los tipos de
+   fila declarados a mano en `src/features/properties/data/supabase-source.ts`.

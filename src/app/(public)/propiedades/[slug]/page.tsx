@@ -38,6 +38,9 @@ import {
 import { cn } from "@/lib/cn";
 import { todayInChile } from "@/lib/format";
 
+// Regenera la página con datos nuevos cada 5 minutos.
+export const revalidate = 300;
+
 type PageProps = { params: Promise<{ slug: string }> };
 
 export async function generateStaticParams() {

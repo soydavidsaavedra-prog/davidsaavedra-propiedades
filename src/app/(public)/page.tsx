@@ -5,6 +5,9 @@ import { FeaturedProperties } from "./_components/featured-properties";
 import { HomeHero } from "./_components/home-hero";
 import { HowItWorks } from "./_components/how-it-works";
 
+// Regenera la página con datos nuevos cada 5 minutos.
+export const revalidate = 300;
+
 export const metadata: Metadata = {
   title: { absolute: "Locales comerciales en arriendo en La Ligua | David Saavedra Propiedades" },
   description:

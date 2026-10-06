@@ -1,11 +1,9 @@
-import {
-  businessTypesFixture,
-  communesFixture,
-  featuresFixture,
-  propertiesFixture,
-  propertyTypesFixture,
-} from "./fixtures";
+import { cache } from "react";
 import { todayInChile } from "@/lib/format";
+import { getSupabaseConfig } from "@/lib/supabase/config";
+import { fixturesSource } from "./data/fixtures-source";
+import type { PropertySource } from "./data/source";
+import { createSupabaseSource } from "./data/supabase-source";
 import type { PropertyFilters } from "./filters";
 import type {
   BusinessType,
@@ -20,14 +18,29 @@ import type {
 /*
  * Acceso a datos de propiedades (lectura pública).
  *
- * FUENTE TEMPORAL: fixtures locales. Al conectar Supabase se reemplaza la
- * implementación de estas funciones por consultas reales (con RLS); la firma
- * se mantiene y la interfaz no cambia.
+ * Fuente: Supabase cuando está configurado (NEXT_PUBLIC_SUPABASE_URL y la
+ * clave publishable); si no, los fixtures locales. En el despliegue de
+ * producción de Vercel la falta de configuración es un error: nunca se
+ * publican datos de ejemplo.
+ *
+ * Con el inventario actual (decenas de propiedades) se cargan las publicadas
+ * y se filtran aquí, igual para ambas fuentes. Si el inventario crece a
+ * cientos, los filtros pasan a SQL sin cambiar estas funciones.
  */
 
-function isPublished(property: PropertyRecord): boolean {
-  return property.status === "published";
+function resolveSource(): PropertySource {
+  const config = getSupabaseConfig();
+  if (config) return createSupabaseSource(config);
+  if (process.env.VERCEL_ENV === "production") {
+    throw new Error("Supabase no está configurado en producción.");
+  }
+  return fixturesSource;
 }
+
+const source = resolveSource();
+
+// Una sola lectura por petición, aunque varias funciones la usen.
+const loadPublished = cache(() => source.loadPublishedProperties());
 
 /** Destacadas primero (por ranking), luego las más recientes. */
 function byListingOrder(a: PropertyRecord, b: PropertyRecord): number {
@@ -77,7 +90,7 @@ function toDetail(property: PropertyRecord): PropertyDetail {
 }
 
 export async function listPublishedProperties(): Promise<PropertySummary[]> {
-  return propertiesFixture.filter(isPublished).sort(byListingOrder).map(toSummary);
+  return [...(await loadPublished())].sort(byListingOrder).map(toSummary);
 }
 
 function matchesFilters(
@@ -130,20 +143,20 @@ export async function searchPublishedProperties(
   filters: PropertyFilters,
 ): Promise<PropertySummary[]> {
   const today = todayInChile();
-  return propertiesFixture
-    .filter((property) => isPublished(property) && matchesFilters(property, filters, today))
+  return (await loadPublished())
+    .filter((property) => matchesFilters(property, filters, today))
     .sort(bySort(filters.sort))
     .map(toSummary);
 }
 
 /** Propiedad publicada por id (p. ej. para validar un formulario de interés). */
 export async function getPublishedPropertyById(id: string): Promise<PropertySummary | null> {
-  const property = propertiesFixture.find((item) => item.id === id && isPublished(item));
+  const property = (await loadPublished()).find((item) => item.id === id);
   return property ? toSummary(property) : null;
 }
 
 export async function getPublishedPropertyBySlug(slug: string): Promise<PropertyDetail | null> {
-  const property = propertiesFixture.find((item) => item.slug === slug && isPublished(item));
+  const property = (await loadPublished()).find((item) => item.slug === slug);
   return property ? toDetail(property) : null;
 }
 
@@ -152,11 +165,8 @@ export async function listRelatedProperties(
   property: Pick<PropertySummary, "id" | "type">,
   limit = 3,
 ): Promise<PropertySummary[]> {
-  return propertiesFixture
-    .filter(
-      (item) =>
-        isPublished(item) && item.id !== property.id && item.type.slug === property.type.slug,
-    )
+  return (await loadPublished())
+    .filter((item) => item.id !== property.id && item.type.slug === property.type.slug)
     .sort(byListingOrder)
     .slice(0, limit)
     .map(toSummary);
@@ -164,18 +174,18 @@ export async function listRelatedProperties(
 
 /** Todos los tipos (los inactivos se muestran como "Próximamente"). */
 export async function listPropertyTypes(): Promise<PropertyType[]> {
-  return [...propertyTypesFixture].sort((a, b) => a.sortOrder - b.sortOrder);
+  return [...(await source.loadPropertyTypes())].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 export async function listCommunes(): Promise<Commune[]> {
-  return [...communesFixture].sort((a, b) => a.sortOrder - b.sortOrder);
+  return [...(await source.loadCommunes())].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 export async function listBusinessTypes(): Promise<BusinessType[]> {
-  return businessTypesFixture;
+  return source.loadBusinessTypes();
 }
 
 /** Características disponibles como filtro. */
 export async function listFilterableFeatures(): Promise<Feature[]> {
-  return featuresFixture.filter((feature) => feature.isFilterable);
+  return (await source.loadFeatures()).filter((feature) => feature.isFilterable);
 }
