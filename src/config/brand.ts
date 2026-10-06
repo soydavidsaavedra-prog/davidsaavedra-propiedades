@@ -1,28 +1,20 @@
 export type BrandAsset = {
-  /** Ruta pública, p. ej. "/brand/logo-horizontal-claro.svg". */
+  /** Ruta pública del archivo. */
   src: string;
+  /** Dimensiones intrínsecas (viewBox); solo se usan para la proporción. */
   width: number;
   height: number;
 };
 
-type BrandAssets = {
-  /** Lockup horizontal (header, footer). Una versión por modo. */
-  logo: {
-    /** Versión oscura, para fondos claros (modo Día). */
-    onLight: BrandAsset | null;
-    /** Versión clara, para fondos oscuros (modo Noche). */
-    onDark: BrandAsset | null;
-  };
-  /** Símbolo independiente (favicon, avatar, perfil). */
-  symbol: BrandAsset | null;
-};
-
 /**
- * Archivos oficiales de marca. Mientras sean `null`, `<Logo />` muestra el
- * nombre en tipografía de marca. Para incorporar el logo vectorial: copiar los
- * SVG a `public/brand/` y completar estas rutas; los componentes no cambian.
+ * Assets digitales de marca, derivados del maestro `design/brand/LOGO DS PROPIEDADES.ai`
+ * sin modificar la geometría (ver `design/brand/README.md`).
  */
-export const brandAssets: BrandAssets = {
-  logo: { onLight: null, onDark: null },
-  symbol: null,
-};
+export const brandAssets = {
+  /** Monograma oficial: letras marfil + dorado. Para fondos oscuros (modo Noche). */
+  logoLight: { src: "/brand/logo.svg", width: 355.87, height: 264.1 },
+  /** Mismo vector con las letras en tinta. Para fondos claros (modo Día). */
+  logoDark: { src: "/brand/logo-dark.svg", width: 355.87, height: 264.1 },
+  /** Monograma oficial sobre fondo night, cuadrado. Favicon y avatar. */
+  symbol: { src: "/brand/symbol.svg", width: 512, height: 512 },
+} satisfies Record<string, BrandAsset>;

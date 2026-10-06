@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { ArrowRight, Heart, Play, Share2, X } from "lucide-react";
 import { Divider } from "@/components/brand/divider";
@@ -63,9 +64,9 @@ const photoRatios: { ratio: MediaRatio; use: string }[] = [
 ];
 
 const logoFiles = [
-  { label: "Horizontal para fondo claro", ready: Boolean(brandAssets.logo.onLight) },
-  { label: "Horizontal para fondo oscuro", ready: Boolean(brandAssets.logo.onDark) },
-  { label: "Símbolo (favicon / perfil)", ready: Boolean(brandAssets.symbol) },
+  { file: "logo.svg", use: "Oficial (marfil + dorado) · fondos oscuros" },
+  { file: "logo-dark.svg", use: "Letras en tinta · fondos claros" },
+  { file: "symbol.svg", use: "Cuadrado sobre night · favicon y avatar" },
 ];
 
 function ScaleRow({ name, children }: { name: string; children: React.ReactNode }) {
@@ -104,45 +105,103 @@ export default function DesignSystemPage() {
         <DemoSection
           id="logo"
           title="Logo"
-          description="El logotipo se renderiza siempre a través de <Logo />. Mientras no exista el SVG oficial, muestra el nombre en la tipografía de marca."
+          description="Monograma oficial, derivado del archivo maestro .ai sin alterar su geometría. El nombre se compone en Montserrat junto al monograma."
         >
           <ModeCompare>
-            <div className="flex min-h-48 items-center justify-center py-6">
-              <Logo size="lg" align="center" href={null} />
+            <div className="flex min-h-64 items-center justify-center py-6">
+              <Logo size="lg" layout="stacked" href={null} />
             </div>
             <div className="flex flex-wrap items-center gap-8">
               <Logo href={null} />
               <Logo size="sm" href={null} />
+              <Logo markOnly href={null} />
             </div>
           </ModeCompare>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="theme-night flex aspect-4/3 items-center justify-center rounded-xl p-8">
+              <Logo markOnly variant="light" size="lg" href={null} />
+            </div>
+            <div className="flex aspect-4/3 items-center justify-center rounded-xl border border-line bg-ivory p-8">
+              <Logo markOnly variant="dark" size="lg" href={null} />
+            </div>
+            <div className="relative flex aspect-4/3 items-center justify-center overflow-hidden rounded-xl p-8">
+              <PhotoPlaceholder tone="dusk" />
+              <div aria-hidden className="absolute inset-0 bg-night/35" />
+              <div className="relative">
+                <Logo markOnly variant="light" size="lg" href={null} />
+              </div>
+            </div>
+            <div className="flex aspect-4/3 items-center justify-center rounded-xl border border-line bg-surface p-8">
+              <Logo markOnly variant="dark" size="lg" href={null} />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <p className="text-sm font-medium">Símbolo: favicon y avatar</p>
+            <div className="flex flex-wrap items-end gap-5">
+              {[96, 64, 48, 32, 16].map((size) => (
+                <figure key={size} className="flex flex-col items-center gap-2">
+                  <Image
+                    src={brandAssets.symbol.src}
+                    alt=""
+                    width={size}
+                    height={size}
+                    unoptimized
+                    className="rounded-md"
+                  />
+                  <figcaption className="text-xs text-ink-muted tabular-nums">{size}px</figcaption>
+                </figure>
+              ))}
+              <figure className="flex flex-col items-center gap-2">
+                <Image
+                  src={brandAssets.symbol.src}
+                  alt=""
+                  width={96}
+                  height={96}
+                  unoptimized
+                  className="rounded-full ring-1 ring-accent-line ring-offset-4 ring-offset-canvas"
+                />
+                <figcaption className="text-xs text-ink-muted">Avatar</figcaption>
+              </figure>
+            </div>
+          </div>
+
           <div className="grid gap-4 md:grid-cols-2">
             <Card className="flex flex-col gap-3 p-5">
-              <p className="font-display font-semibold">Reemplazo por SVG</p>
-              <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-sm text-ink-soft">
-                <li>
-                  Copiar los archivos a <code className="font-mono text-xs">public/brand/</code>.
-                </li>
-                <li>
-                  Completar las rutas en{" "}
-                  <code className="font-mono text-xs">src/config/brand.ts</code>.
-                </li>
-                <li>Header, footer y páginas se actualizan sin modificar componentes.</li>
-              </ol>
+              <p className="font-display font-semibold">Archivos de marca</p>
+              <ul className="flex flex-col gap-2.5 text-sm">
+                {logoFiles.map((item) => (
+                  <li
+                    key={item.file}
+                    className="flex flex-col gap-0.5 sm:flex-row sm:justify-between sm:gap-3"
+                  >
+                    <code className="font-mono text-xs">public/brand/{item.file}</code>
+                    <span className="text-ink-muted">{item.use}</span>
+                  </li>
+                ))}
+              </ul>
               <p className="text-sm text-ink-muted">
-                La referencia visual del logo no se incorporó al repositorio.
+                Maestro:{" "}
+                <code className="font-mono text-xs">design/brand/LOGO DS PROPIEDADES.ai</code>
               </p>
             </Card>
             <Card className="flex flex-col gap-3 p-5">
-              <p className="font-display font-semibold">Archivos esperados</p>
-              <ul className="flex flex-col gap-2.5 text-sm">
-                {logoFiles.map((file) => (
-                  <li key={file.label} className="flex items-center justify-between gap-3">
-                    <span className="text-ink-soft">{file.label}</span>
-                    <Badge tone={file.ready ? "success" : "warning"}>
-                      {file.ready ? "Listo" : "Pendiente SVG"}
-                    </Badge>
-                  </li>
-                ))}
+              <p className="font-display font-semibold">Uso</p>
+              <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-ink-soft">
+                <li>
+                  <code className="font-mono text-xs">{"<Logo />"}</code> sigue el modo: Día usa la
+                  versión oscura y Noche la oficial.
+                </li>
+                <li>
+                  <code className="font-mono text-xs">variant=&quot;light&quot;</code> sobre
+                  fotografía; <code className="font-mono text-xs">variant=&quot;dark&quot;</code>{" "}
+                  sobre fondos claros fijos.
+                </li>
+                <li>
+                  <code className="font-mono text-xs">markOnly</code> para espacios reducidos.
+                </li>
+                <li>Nunca deformar, recolorear con filtros ni redibujar el monograma.</li>
               </ul>
             </Card>
           </div>
