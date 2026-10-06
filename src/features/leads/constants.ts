@@ -78,6 +78,13 @@ export const moveTimeframeLabels: Record<MoveTimeframe, string> = {
 export const LEAD_PROPERTY_RELATIONS = ["inquired", "suggested", "visited", "discarded"] as const;
 export type LeadPropertyRelation = (typeof LEAD_PROPERTY_RELATIONS)[number];
 
+export const leadPropertyRelationLabels: Record<LeadPropertyRelation, string> = {
+  inquired: "Consultó",
+  suggested: "Sugerida",
+  visited: "Visitada",
+  discarded: "Descartada",
+};
+
 export const LEAD_ACTIVITY_TYPES = [
   "note",
   "call",

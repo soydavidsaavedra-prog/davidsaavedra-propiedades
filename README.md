@@ -28,7 +28,7 @@ pnpm build
 ## Panel de administración
 
 `/admin` (no se indexa): ingreso con correo y contraseña de Supabase Auth y
-gestión de propiedades.
+gestión de propiedades y leads.
 
 - **Propiedades:** crear (quedan en borrador), editar todos los datos públicos
   y los internos (dirección exacta, comisión, llaves, notas), publicar, pasar a
@@ -38,6 +38,13 @@ gestión de propiedades.
   (`property-media/{id}/…`); las fotos de más de 2400 px se reducen antes de
   subir. Portada, orden, texto alternativo, videos MP4/WebM (hasta 50 MB) y
   enlaces de YouTube o Vimeo.
+- **Leads** (`/admin/leads`): bandeja con vistas (en gestión, nuevos, acción
+  vencida, ganados, perdidos), búsqueda por nombre o teléfono y filtros por tipo
+  y origen. La ficha muestra los datos de contacto (llamar, WhatsApp, correo),
+  la etapa del embudo (perder exige motivo; el historial lo registra un
+  trigger), la próxima acción con fecha, el timeline (notas, llamadas,
+  WhatsApp, correos, reuniones, consultas web y cambios de etapa) y las
+  propiedades vinculadas (consultó, sugerida, visitada, descartada).
 - **Seguridad:** `src/proxy.ts` renueva la sesión y redirige a `/admin/ingresar`
   (filtro optimista); cada página y Server Action vuelve a verificar el rol
   `admin` en `profiles` (`src/features/admin/session.ts`), y RLS lo exige en la

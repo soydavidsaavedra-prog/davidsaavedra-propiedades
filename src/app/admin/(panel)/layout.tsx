@@ -12,11 +12,14 @@ export default async function PanelLayout({ children }: Readonly<{ children: Rea
     <div className="flex min-h-dvh flex-col">
       <header className="sticky top-0 z-40 border-b border-line bg-canvas/90 backdrop-blur-md">
         <Container className="flex h-16 items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4 sm:gap-6">
             <Logo href="/admin/propiedades" size="sm" />
-            <nav aria-label="Panel" className="text-sm font-medium">
+            <nav aria-label="Panel" className="flex gap-3 text-sm font-medium sm:gap-4">
               <Link href="/admin/propiedades" className="text-ink-soft hover:text-ink">
                 Propiedades
+              </Link>
+              <Link href="/admin/leads" className="text-ink-soft hover:text-ink">
+                Leads
               </Link>
             </nav>
           </div>
@@ -32,9 +35,11 @@ export default async function PanelLayout({ children }: Readonly<{ children: Rea
             <form action={signOutAction}>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded-md px-3 py-2 text-ink-soft hover:bg-surface-muted hover:text-ink"
+                aria-label="Salir"
+                className="flex items-center gap-1.5 rounded-md px-2 py-2 text-ink-soft hover:bg-surface-muted hover:text-ink sm:px-3"
               >
-                <LogOut className="size-4" aria-hidden /> Salir
+                <LogOut className="size-4" aria-hidden />{" "}
+                <span className="hidden sm:inline">Salir</span>
               </button>
             </form>
           </div>
