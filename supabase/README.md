@@ -50,6 +50,8 @@ profiles (auth.users) ── rol admin/agent
 - **Leads públicos solo vía `submit_lead()`** (security definer): valida,
   exige consentimiento, limita abuso (5 envíos por teléfono cada 10 min) y,
   si el teléfono ya tiene un lead abierto, agrega la consulta a ese lead.
+  Recibe el tipo de cliente: `tenant` (busca propiedad) u `owner` (propietario
+  que quiere arrendar la suya), para captar inventario desde `/contacto`.
 - **Historial de estados por trigger**, no desde la aplicación.
 - **Timeline unificado** (`lead_activities`): notas e interacciones; toda
   interacción (no las notas) actualiza `last_interaction_at`.

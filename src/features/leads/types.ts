@@ -1,4 +1,4 @@
-import type { LeadSource, MoveTimeframe } from "./constants";
+import type { LeadSource, LeadType, MoveTimeframe } from "./constants";
 
 /**
  * Datos que envía el formulario público de interés. Corresponde a los
@@ -9,6 +9,8 @@ export type LeadSubmission = {
   /** Formato E.164, p. ej. +56912345678. */
   phone: string;
   consent: true;
+  /** Desde el sitio: busca propiedad (`tenant`) o quiere arrendar la suya (`owner`). */
+  leadType: Extract<LeadType, "tenant" | "owner">;
   propertyId?: string;
   email?: string;
   businessTypeId?: string;

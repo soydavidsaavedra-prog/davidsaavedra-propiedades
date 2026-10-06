@@ -68,6 +68,7 @@ export function parseLeadForm(formData: FormData): LeadParseResult {
       fullName,
       phone,
       consent: true,
+      leadType: formData.get("tipo_cliente") === "owner" ? "owner" : "tenant",
       propertyId: propertyId && UUID.test(propertyId) ? propertyId : undefined,
       businessTypeId: businessTypeId && UUID.test(businessTypeId) ? businessTypeId : undefined,
       businessDescription: text(formData, "rubro_detalle", 200),

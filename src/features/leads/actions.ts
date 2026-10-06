@@ -10,7 +10,14 @@ import { parseLeadForm, type LeadFieldErrors } from "./validation";
 /** Valores ingresados, para restaurarlos si hay que corregir algo. */
 export type LeadFormValues = Partial<
   Record<
-    "nombre" | "whatsapp" | "rubro" | "presupuesto" | "plazo" | "mensaje" | "consentimiento",
+    | "nombre"
+    | "whatsapp"
+    | "rubro"
+    | "presupuesto"
+    | "plazo"
+    | "mensaje"
+    | "consentimiento"
+    | "tipo_cliente",
     string
   >
 >;
@@ -32,8 +39,12 @@ export type LeadFormState =
 function whatsappMessage(
   name: string,
   property: Awaited<ReturnType<typeof getPublishedPropertyById>>,
+  leadType: "tenant" | "owner",
 ): string {
-  if (!property) return `Hola David, soy ${name}. Te dejé mis datos en tu sitio web.`;
+  if (leadType === "owner") {
+    return `Hola David, soy ${name}. Tengo una propiedad para arrendar y me gustaría conversar.`;
+  }
+  if (!property) return `Hola David, soy ${name}. Te escribí desde tu sitio web.`;
   const url = new URL(propertyPath(property.slug), siteConfig.url).toString();
   return `Hola David, soy ${name}. Me interesa el ${property.type.name.toLowerCase()} ${property.code} en ${property.commune.name} (${url}). ¿Podemos coordinar una visita?`;
 }
@@ -46,6 +57,7 @@ const FORM_FIELDS = [
   "plazo",
   "mensaje",
   "consentimiento",
+  "tipo_cliente",
 ] as const;
 
 function submittedValues(formData: FormData): LeadFormValues {
@@ -85,7 +97,10 @@ export async function submitLeadAction(
   const result = await submitLead(submission);
   const firstName = submission.fullName.split(" ")[0] ?? submission.fullName;
   const contactUrl = siteConfig.whatsappNumber
-    ? whatsappUrl(siteConfig.whatsappNumber, whatsappMessage(firstName, property))
+    ? whatsappUrl(
+        siteConfig.whatsappNumber,
+        whatsappMessage(firstName, property, submission.leadType),
+      )
     : null;
 
   if (!result.ok) {

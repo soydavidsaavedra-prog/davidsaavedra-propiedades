@@ -13,6 +13,7 @@ create function public.submit_lead(
   p_full_name text,
   p_phone text,
   p_consent boolean,
+  p_lead_type public.lead_type default 'tenant',
   p_property_id uuid default null,
   p_email text default null,
   p_business_type_id uuid default null,
@@ -47,6 +48,9 @@ begin
   if v_phone is null or v_phone !~ '^\+[1-9][0-9]{7,14}$' then
     raise exception 'invalid_phone' using errcode = '22023';
   end if;
+  if p_lead_type is not null and p_lead_type not in ('tenant', 'owner') then
+    raise exception 'invalid_lead_type' using errcode = '22023';
+  end if;
   if p_property_id is not null and not exists (
     select 1 from public.properties where id = p_property_id and status = 'published'
   ) then
@@ -73,12 +77,12 @@ begin
 
   if v_lead_id is null then
     insert into public.leads (
-      full_name, phone, email, business_type_id, business_description,
+      full_name, phone, email, lead_type, business_type_id, business_description,
       budget_min_clp, budget_max_clp, move_timeframe, message, source,
       utm_source, utm_medium, utm_campaign, consent_at
     )
     values (
-      v_name, v_phone, nullif(btrim(p_email), ''), p_business_type_id,
+      v_name, v_phone, nullif(btrim(p_email), ''), coalesce(p_lead_type, 'tenant'), p_business_type_id,
       nullif(btrim(p_business_description), ''), p_budget_min_clp, p_budget_max_clp,
       p_move_timeframe, nullif(btrim(p_message), ''), p_source,
       p_utm_source, p_utm_medium, p_utm_campaign, now()

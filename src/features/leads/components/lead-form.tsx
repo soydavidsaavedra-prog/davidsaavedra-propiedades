@@ -1,23 +1,49 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, MessageCircle } from "lucide-react";
+import { ArrowRight, CheckCircle2, House, MessageCircle, Search } from "lucide-react";
 import { readStoredUtm } from "@/components/analytics/utm-capture";
 import { Button, buttonStyles } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field } from "@/components/ui/field";
 import { Input, Select, Textarea } from "@/components/ui/input";
+import { RadioCard } from "@/components/ui/radio-card";
 import { siteConfig } from "@/config/site";
 import type { BusinessType } from "@/features/properties/types";
 import { submitLeadAction, type LeadFormState } from "../actions";
 import { BUDGET_RANGES, timeframeOptions } from "../options";
 
 type LeadFormProps = {
+  /**
+   * `property`: interés en una propiedad (ficha).
+   * `contact`: contacto general; pregunta si busca propiedad o quiere arrendar la suya.
+   */
+  variant?: "property" | "contact";
   propertyId?: string;
   propertyCode?: string;
   businessTypes: BusinessType[];
 };
+
+type Intent = "tenant" | "owner";
+
+const copy = {
+  property: {
+    submit: "Quiero visitar esta propiedad",
+    whatsappHint: "Te escribiré solo para coordinar la visita.",
+    success: "Te contactaré por WhatsApp para coordinar la visita.",
+  },
+  tenant: {
+    submit: "Enviar mensaje",
+    whatsappHint: "Te responderé por este medio.",
+    success: "Te responderé por WhatsApp a la brevedad.",
+  },
+  owner: {
+    submit: "Quiero arrendar mi propiedad",
+    whatsappHint: "Te escribiré para conocer tu propiedad.",
+    success: "Te escribiré por WhatsApp para conocer tu propiedad y contarte cómo trabajo.",
+  },
+} as const;
 
 const initialState: LeadFormState = { status: "idle" };
 
@@ -25,8 +51,15 @@ const initialState: LeadFormState = { status: "idle" };
  * Formulario de interés en dos niveles: lo mínimo para contactar (nombre y
  * WhatsApp) y detalles opcionales de calificación.
  */
-export function LeadForm({ propertyId, propertyCode, businessTypes }: LeadFormProps) {
+export function LeadForm({
+  variant = "property",
+  propertyId,
+  propertyCode,
+  businessTypes,
+}: LeadFormProps) {
   const [state, formAction, pending] = useActionState(submitLeadAction, initialState);
+  const [intent, setIntent] = useState<Intent>("tenant");
+  const text = variant === "property" ? copy.property : copy[intent];
 
   // Agrega el origen de la visita (UTM guardado en la sesión) al enviar.
   const submitWithOrigin = (formData: FormData) => {
@@ -45,8 +78,8 @@ export function LeadForm({ propertyId, propertyCode, businessTypes }: LeadFormPr
             {state.firstName ? `¡Gracias, ${state.firstName}!` : "¡Gracias!"}
           </p>
           <p className="text-ink-soft">
-            Recibí tu solicitud{propertyCode ? ` por ${propertyCode}` : ""}. Te contactaré por
-            WhatsApp para coordinar la visita.
+            Recibí tu {variant === "property" ? "solicitud" : "mensaje"}
+            {propertyCode ? ` por ${propertyCode}` : ""}. {text.success}
           </p>
         </div>
         {state.whatsappUrl && (
@@ -78,6 +111,33 @@ export function LeadForm({ propertyId, propertyCode, businessTypes }: LeadFormPr
       className="flex flex-col gap-5"
     >
       {propertyId && <input type="hidden" name="propiedad" value={propertyId} />}
+      {variant === "contact" && (
+        <fieldset className="flex flex-col gap-3">
+          <legend className="mb-3 text-sm font-medium">¿En qué te puedo ayudar?</legend>
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            <RadioCard
+              id="lead-tipo-tenant"
+              name="tipo_cliente"
+              value="tenant"
+              checked={intent === "tenant"}
+              onChange={() => setIntent("tenant")}
+              icon={<Search />}
+              label="Busco una propiedad"
+              description="Para arrendar"
+            />
+            <RadioCard
+              id="lead-tipo-owner"
+              name="tipo_cliente"
+              value="owner"
+              checked={intent === "owner"}
+              onChange={() => setIntent("owner")}
+              icon={<House />}
+              label="Tengo una propiedad"
+              description="Quiero arrendarla"
+            />
+          </div>
+        </fieldset>
+      )}
       {/* Trampa para bots: oculto para personas y lectores de pantalla. */}
       <div aria-hidden className="absolute -left-[9999px] h-0 overflow-hidden">
         <label htmlFor="sitio_web">No completar</label>
@@ -96,12 +156,7 @@ export function LeadForm({ propertyId, propertyCode, businessTypes }: LeadFormPr
           />
         )}
       </Field>
-      <Field
-        id="lead-whatsapp"
-        label="WhatsApp"
-        hint="Te escribiré solo para coordinar la visita."
-        error={errors.phone}
-      >
+      <Field id="lead-whatsapp" label="WhatsApp" hint={text.whatsappHint} error={errors.phone}>
         {(control) => (
           <Input
             {...control}
@@ -116,65 +171,85 @@ export function LeadForm({ propertyId, propertyCode, businessTypes }: LeadFormPr
         )}
       </Field>
 
-      <details
-        open={hasDetails || undefined}
-        className="group rounded-lg border border-line bg-surface-muted/50 open:bg-transparent"
-      >
-        <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-[0.9375rem] font-medium [&::-webkit-details-marker]:hidden">
-          Cuéntame sobre tu proyecto
-          <span className="text-sm font-normal text-ink-muted group-open:hidden">Opcional</span>
-        </summary>
-        <div className="flex flex-col gap-5 px-4 pt-1 pb-5">
-          <Field id="lead-rubro" label="Tipo de negocio" optional>
-            {(control) => (
-              <Select {...control} name="rubro" defaultValue={values.rubro ?? ""}>
-                <option value="">Selecciona</option>
-                {businessTypes.map((type) => (
-                  <option key={type.id} value={type.id}>
-                    {type.name}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
-          <Field id="lead-presupuesto" label="Presupuesto mensual" optional>
-            {(control) => (
-              <Select {...control} name="presupuesto" defaultValue={values.presupuesto ?? ""}>
-                <option value="">Selecciona un rango</option>
-                {BUDGET_RANGES.map((range) => (
-                  <option key={range.value} value={range.value}>
-                    {range.label}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
-          <Field id="lead-plazo" label="¿Cuándo te gustaría instalarte?" optional>
-            {(control) => (
-              <Select {...control} name="plazo" defaultValue={values.plazo ?? ""}>
-                <option value="">Selecciona</option>
-                {timeframeOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </Field>
-          <Field id="lead-mensaje" label="Mensaje" optional error={errors.message}>
-            {(control) => (
-              <Textarea
-                {...control}
-                name="mensaje"
-                rows={3}
-                maxLength={2000}
-                placeholder="Horarios para visitar, dudas sobre el local…"
-                defaultValue={values.mensaje}
-              />
-            )}
-          </Field>
-        </div>
-      </details>
+      {intent === "owner" && variant === "contact" ? (
+        <Field
+          id="lead-mensaje"
+          label="Cuéntame sobre tu propiedad"
+          optional
+          error={errors.message}
+        >
+          {(control) => (
+            <Textarea
+              {...control}
+              name="mensaje"
+              rows={4}
+              maxLength={2000}
+              placeholder="Tipo de propiedad, ubicación, metros cuadrados y desde cuándo está disponible."
+              defaultValue={values.mensaje}
+            />
+          )}
+        </Field>
+      ) : (
+        <details
+          open={hasDetails || undefined}
+          className="group rounded-lg border border-line bg-surface-muted/50 open:bg-transparent"
+        >
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 text-[0.9375rem] font-medium [&::-webkit-details-marker]:hidden">
+            Cuéntame sobre tu proyecto
+            <span className="text-sm font-normal text-ink-muted group-open:hidden">Opcional</span>
+          </summary>
+          <div className="flex flex-col gap-5 px-4 pt-1 pb-5">
+            <Field id="lead-rubro" label="Tipo de negocio" optional>
+              {(control) => (
+                <Select {...control} name="rubro" defaultValue={values.rubro ?? ""}>
+                  <option value="">Selecciona</option>
+                  {businessTypes.map((type) => (
+                    <option key={type.id} value={type.id}>
+                      {type.name}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+            <Field id="lead-presupuesto" label="Presupuesto mensual" optional>
+              {(control) => (
+                <Select {...control} name="presupuesto" defaultValue={values.presupuesto ?? ""}>
+                  <option value="">Selecciona un rango</option>
+                  {BUDGET_RANGES.map((range) => (
+                    <option key={range.value} value={range.value}>
+                      {range.label}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+            <Field id="lead-plazo" label="¿Cuándo te gustaría instalarte?" optional>
+              {(control) => (
+                <Select {...control} name="plazo" defaultValue={values.plazo ?? ""}>
+                  <option value="">Selecciona</option>
+                  {timeframeOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              )}
+            </Field>
+            <Field id="lead-mensaje" label="Mensaje" optional error={errors.message}>
+              {(control) => (
+                <Textarea
+                  {...control}
+                  name="mensaje"
+                  rows={3}
+                  maxLength={2000}
+                  placeholder="Horarios para visitar, dudas sobre el local…"
+                  defaultValue={values.mensaje}
+                />
+              )}
+            </Field>
+          </div>
+        </details>
+      )}
 
       <div className="flex flex-col gap-1.5">
         <Checkbox
@@ -235,7 +310,7 @@ export function LeadForm({ propertyId, propertyCode, businessTypes }: LeadFormPr
       )}
 
       <Button type="submit" size="lg" fullWidth disabled={pending}>
-        {pending ? "Enviando…" : "Quiero visitar esta propiedad"}
+        {pending ? "Enviando…" : text.submit}
         {!pending && <ArrowRight />}
       </Button>
     </form>
