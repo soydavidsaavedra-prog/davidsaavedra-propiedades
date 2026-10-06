@@ -94,6 +94,7 @@ type DetailRow = {
   utm_source: string | null;
   utm_medium: string | null;
   utm_campaign: string | null;
+  business_type_id: string | null;
   business_description: string | null;
   budget_min_clp: Num;
   budget_max_clp: Num;
@@ -170,6 +171,7 @@ export async function getAdminLead(
     lostReason: row.lost_reason,
     source: row.source,
     utm: { source: row.utm_source, medium: row.utm_medium, campaign: row.utm_campaign },
+    businessTypeId: row.business_type_id,
     businessTypeName: row.business_types?.name ?? null,
     businessDescription: row.business_description,
     budgetMinClp: num(row.budget_min_clp),
@@ -202,5 +204,14 @@ export async function listLeadPropertyOptions({
 }: AdminContext): Promise<LeadPropertyOption[]> {
   return rows<LeadPropertyOption[]>(
     supabase.from("properties").select("id, code, title").neq("status", "archived").order("code"),
+  );
+}
+
+/** Rubros para el formulario del lead (incluye inactivos: RLS de administración). */
+export async function listBusinessTypeOptions({
+  supabase,
+}: AdminContext): Promise<{ id: string; name: string }[]> {
+  return rows<{ id: string; name: string }[]>(
+    supabase.from("business_types").select("id, name").order("sort_order"),
   );
 }
