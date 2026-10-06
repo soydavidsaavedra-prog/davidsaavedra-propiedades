@@ -91,5 +91,9 @@ de estados lo escribe solo el trigger. **No usar contra la base de producción.*
 4. Variables de entorno de la aplicación (Project Settings → API):
    `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
    La clave publishable es pública; **nunca** usar la `service_role` en la app.
-5. Generar tipos (`supabase gen types typescript`) para reemplazar los tipos de
+5. Panel (`/admin`): se ingresa con el correo y la contraseña del usuario
+   administrador. Si se creó sin contraseña o se olvidó, en el SQL Editor:
+   `update auth.users set encrypted_password = extensions.crypt('<nueva>', extensions.gen_salt('bf')) where email = '<correo>';`
+   No requiere configuración adicional de Auth (solo correo y contraseña).
+6. Generar tipos (`supabase gen types typescript`) para reemplazar los tipos de
    fila declarados a mano en `src/features/properties/data/supabase-source.ts`.
