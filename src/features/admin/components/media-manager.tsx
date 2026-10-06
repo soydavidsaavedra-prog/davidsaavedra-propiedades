@@ -19,60 +19,13 @@ import {
   updateMediaTextAction,
 } from "../properties/media-actions";
 import type { AdminMedia } from "../properties/types";
+import { ACCEPTED_FILES, MAX_IMAGE_SIDE, prepareFile, UPLOAD_EXTENSIONS } from "../media/prepare";
 
 type MediaManagerProps = {
   propertyId: string;
   media: AdminMedia[];
   config: SupabaseConfig;
 };
-
-/** Lado mayor de las fotos subidas: suficiente para pantallas grandes, liviano para móviles. */
-const MAX_IMAGE_SIDE = 2400;
-const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
-const EXTENSIONS: Record<string, string> = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/avif": "avif",
-  "video/mp4": "mp4",
-  "video/webm": "webm",
-};
-
-type Prepared = {
-  blob: Blob;
-  kind: "image" | "video";
-  width: number | null;
-  height: number | null;
-};
-
-/** Reduce fotos grandes a JPEG (calidad 85) y obtiene sus dimensiones. */
-async function prepareFile(file: File): Promise<Prepared> {
-  if (file.type.startsWith("video/")) {
-    if (!EXTENSIONS[file.type]) throw new Error("Usa videos MP4 o WebM.");
-    if (file.size > MAX_VIDEO_BYTES) throw new Error("El video supera 50 MB. Súbelo a YouTube.");
-    return { blob: file, kind: "video", width: null, height: null };
-  }
-  if (!EXTENSIONS[file.type]) throw new Error("Formato no compatible. Usa JPG, PNG o WebP.");
-
-  const bitmap = await createImageBitmap(file, { imageOrientation: "from-image" });
-  const { width, height } = bitmap;
-  const scale = Math.min(1, MAX_IMAGE_SIDE / Math.max(width, height));
-  if (scale === 1 && file.size <= 3 * 1024 * 1024) {
-    bitmap.close();
-    return { blob: file, kind: "image", width, height };
-  }
-
-  const canvas = document.createElement("canvas");
-  canvas.width = Math.round(width * scale);
-  canvas.height = Math.round(height * scale);
-  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  bitmap.close();
-  const blob = await new Promise<Blob | null>((resolve) =>
-    canvas.toBlob(resolve, "image/jpeg", 0.85),
-  );
-  if (!blob) throw new Error("No se pudo procesar la foto.");
-  return { blob, kind: "image", width: canvas.width, height: canvas.height };
-}
 
 export function MediaManager({ propertyId, media, config }: MediaManagerProps) {
   const router = useRouter();
@@ -97,10 +50,14 @@ export function MediaManager({ propertyId, media, config }: MediaManagerProps) {
     setMessage(null);
 
     for (const [index, file] of [...files].entries()) {
-      setProgress(`Subiendo ${index + 1} de ${files.length}: ${file.name}`);
+      const step = `${index + 1} de ${files.length}: ${file.name}`;
+      setProgress(`Preparando ${step}`);
       try {
-        const prepared = await prepareFile(file);
-        const path = `${propertyId}/${crypto.randomUUID()}.${EXTENSIONS[prepared.blob.type || file.type]}`;
+        const prepared = await prepareFile(file, (fraction) =>
+          setProgress(`Convirtiendo video ${step} (${Math.round(fraction * 100)} %)`),
+        );
+        setProgress(`Subiendo ${step}`);
+        const path = `${propertyId}/${crypto.randomUUID()}.${UPLOAD_EXTENSIONS[prepared.blob.type || file.type]}`;
         const { error } = await supabase.storage
           .from("property-media")
           .upload(path, prepared.blob, {
@@ -143,8 +100,8 @@ export function MediaManager({ propertyId, media, config }: MediaManagerProps) {
             Fotos y videos
           </h2>
           <p className="text-sm text-ink-muted">
-            La primera foto es la portada. Las fotos grandes se reducen a {MAX_IMAGE_SIDE} px antes
-            de subirlas.
+            La primera foto es la portada. Fotos JPG, PNG, WebP o HEIC (se convierten a JPG y se
+            reducen a {MAX_IMAGE_SIDE} px). Videos MOV o MP4: se comprimen a MP4 antes de subir.
           </p>
         </div>
         <Button variant="secondary" disabled={busy} onClick={() => fileInput.current?.click()}>
@@ -153,7 +110,7 @@ export function MediaManager({ propertyId, media, config }: MediaManagerProps) {
         <input
           ref={fileInput}
           type="file"
-          accept="image/jpeg,image/png,image/webp,image/avif,video/mp4,video/webm"
+          accept={ACCEPTED_FILES}
           multiple
           hidden
           onChange={(event) => event.target.files?.length && upload(event.target.files)}
