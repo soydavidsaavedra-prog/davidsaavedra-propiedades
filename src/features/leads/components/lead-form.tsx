@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { ArrowRight, CheckCircle2, MessageCircle } from "lucide-react";
 import { readStoredUtm } from "@/components/analytics/utm-capture";
 import { Button, buttonStyles } from "@/components/ui/button";
@@ -184,7 +185,20 @@ export function LeadForm({ propertyId, propertyCode, businessTypes }: LeadFormPr
           defaultChecked={values.consentimiento === "1"}
           aria-invalid={errors.consent ? true : undefined}
           aria-describedby={errors.consent ? "lead-consentimiento-error" : undefined}
-          label={`Autorizo a ${siteConfig.name} a usar mis datos para contactarme sobre esta solicitud.`}
+          label={
+            <span>
+              Autorizo a {siteConfig.name} a usar mis datos para contactarme sobre esta solicitud,
+              según la{" "}
+              <Link
+                href="/privacidad"
+                target="_blank"
+                className="font-medium text-ink underline underline-offset-4"
+              >
+                política de privacidad
+              </Link>
+              .
+            </span>
+          }
           className="items-start text-sm text-ink-soft [&>input]:mt-0.5"
         />
         {errors.consent && (

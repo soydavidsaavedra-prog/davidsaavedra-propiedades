@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Divider } from "@/components/brand/divider";
 import { Logo } from "@/components/brand/logo";
 import { SectionLabel } from "@/components/brand/section-label";
@@ -44,9 +45,14 @@ export function SiteFooter() {
           </div>
         </div>
         <Divider variant="cut" />
-        <p className="text-xs text-ink-muted">
-          © {new Date().getFullYear()} {siteConfig.name} · {social.handle}
-        </p>
+        <div className="flex flex-col gap-3 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} {siteConfig.name} · {social.handle}
+          </p>
+          <Link href="/privacidad" className="hover:text-ink">
+            Política de privacidad
+          </Link>
+        </div>
       </Container>
     </footer>
   );

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/cn";
 
 type CheckboxProps = Omit<React.ComponentProps<"input">, "type"> & {
-  label: string;
+  label: React.ReactNode;
 };
 
 /** Casilla nativa con etiqueta clicable y área táctil de 44 px. */

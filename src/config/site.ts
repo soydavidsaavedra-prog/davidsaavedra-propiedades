@@ -12,6 +12,16 @@ export const siteConfig = {
     region: "Región de Valparaíso",
     country: "Chile",
   },
+  /** Datos del responsable del tratamiento de datos personales (política de privacidad). */
+  legal: {
+    controller: "David Saavedra",
+    /** RUT del responsable (persona natural o empresa). Pendiente de confirmar. */
+    taxId: null as string | null,
+    /** Correo para solicitudes sobre datos personales. Pendiente de confirmar. */
+    privacyEmail: null as string | null,
+    /** Fecha de la última actualización de la política (YYYY-MM-DD). */
+    privacyUpdatedAt: "2026-10-06",
+  },
   social: {
     instagram: "https://www.instagram.com/davidsaavedra.cl",
     tiktok: "https://www.tiktok.com/@davidsaavedra.cl",
