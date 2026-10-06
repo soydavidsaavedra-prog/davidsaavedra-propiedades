@@ -78,8 +78,9 @@ de estados lo escribe solo el trigger. **No usar contra la base de producción.*
 ## Conectar el proyecto de Supabase
 
 1. Crear el proyecto en supabase.com (región São Paulo, la más cercana a Chile).
-2. Aplicar las migraciones en orden y luego `seed.sql`: con la CLI
-   (`supabase link` + `supabase db push`) o pegándolas en el SQL Editor.
+2. Aplicar el esquema: pegar `supabase/setup.sql` (las migraciones en orden +
+   el seed, generado con `pnpm db:setup-file`) en el SQL Editor y ejecutar una
+   vez; o usar la CLI (`supabase link` + `supabase db push`) y luego `seed.sql`.
 3. En Authentication: desactivar el registro público; crear el usuario
    administrador y luego `update public.profiles set role = 'admin' where id = '<uuid>';`.
 4. Variables de entorno de la aplicación (Project Settings → API):

@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:setup-file": "node scripts/build-supabase-setup.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
