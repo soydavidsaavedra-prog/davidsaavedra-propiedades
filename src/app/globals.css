@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+/*
+ * Tokens del sistema visual — DAVID SAAVEDRA | PROPIEDADES
+ *
+ * PROVISORIO: paleta neutra y arquitectónica (piedra, hormigón, grafito)
+ * mientras se incorporan los recursos de identidad existentes de la marca.
+ * Los componentes usan solo nombres semánticos (canvas, ink, brand…), por lo
+ * que ajustar la identidad se hace aquí, sin tocar componentes.
+ *
+ * La paleta por defecto de Tailwind se desactiva a propósito para que la UI
+ * no use colores fuera del sistema.
+ */
+@theme {
+  --color-*: initial;
+
+  --color-white: #ffffff;
+
+  /* Superficies */
+  --color-canvas: #f6f5f2;
+  --color-surface: #ffffff;
+  --color-surface-muted: #eceae5;
+  --color-line: #e0ddd6;
+  --color-line-strong: #bdb8ae;
+
+  /* Texto */
+  --color-ink: #1b1b19;
+  --color-ink-soft: #45433e;
+  --color-ink-muted: #6b675f;
+
+  /* Marca (provisorio: grafito; se reemplaza al recibir la identidad) */
+  --color-brand: #1b1b19;
+  --color-brand-hover: #33322e;
+  --color-brand-contrast: #ffffff;
+  --color-accent: #73644f;
+
+  /* Estados */
+  --color-success: #2e6a4c;
+  --color-success-soft: #e3eee7;
+  --color-warning: #8a5a12;
+  --color-warning-soft: #f4ead8;
+  --color-danger: #a1352a;
+  --color-danger-soft: #f5e1de;
+
+  /* Tipografía (familias inyectadas por next/font en el layout raíz) */
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), var(--font-body), ui-sans-serif, system-ui, sans-serif;
+
+  --text-display: clamp(2.25rem, 1.5rem + 3.2vw, 4rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.025em;
+
+  /* Forma: radios contenidos, coherentes con una estética arquitectónica */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+
+  --shadow-soft: 0 1px 2px rgb(27 27 25 / 0.05), 0 2px 8px rgb(27 27 25 / 0.04);
+  --shadow-raised: 0 4px 12px rgb(27 27 25 / 0.08), 0 16px 40px rgb(27 27 25 / 0.08);
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility tracking-brand {
+  letter-spacing: 0.24em;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display text-balance;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-ink;
+  }
+
+  ::selection {
+    @apply bg-ink text-white;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
