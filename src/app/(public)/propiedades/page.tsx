@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { SearchX } from "lucide-react";
+import { Building2, SearchX } from "lucide-react";
 import { SectionLabel } from "@/components/brand/section-label";
 import { buttonStyles } from "@/components/ui/button";
 import { Container } from "@/components/ui/container";
@@ -56,7 +56,15 @@ function resultsLabel(count: number): string {
   return count === 1 ? "1 resultado" : `${count} resultados`;
 }
 
-function NoResults({ filters, type }: { filters: PropertyFilters; type?: PropertyType }) {
+function NoResults({
+  filters,
+  type,
+  refinements,
+}: {
+  filters: PropertyFilters;
+  type?: PropertyType;
+  refinements: number;
+}) {
   if (type && !type.isActive) {
     return (
       <EmptyState
@@ -66,6 +74,22 @@ function NoResults({ filters, type }: { filters: PropertyFilters; type?: Propert
         action={
           <Link href="/propiedades" className={buttonStyles({ variant: "secondary" })}>
             Ver locales disponibles
+          </Link>
+        }
+      />
+    );
+  }
+
+  // Sin filtros que quitar: no hay inventario publicado (no es la búsqueda).
+  if (refinements === 0) {
+    return (
+      <EmptyState
+        icon={<Building2 />}
+        title={`Pronto publicaremos nuevos ${type ? type.namePlural.toLowerCase() : "locales"}`}
+        description="Estamos preparando las próximas propiedades. Escríbenos y te avisamos apenas estén disponibles."
+        action={
+          <Link href="/contacto" className={buttonStyles({ variant: "secondary" })}>
+            Contactar
           </Link>
         }
       />
@@ -137,7 +161,7 @@ export default async function PropertiesPage({ searchParams }: PageProps) {
           </div>
 
           {properties.length === 0 ? (
-            <NoResults filters={filters} type={type} />
+            <NoResults filters={filters} type={type} refinements={refinements} />
           ) : (
             <ul className="grid gap-6 sm:grid-cols-2">
               {properties.map((property, index) => (

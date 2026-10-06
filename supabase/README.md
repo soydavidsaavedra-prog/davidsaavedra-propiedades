@@ -1,9 +1,13 @@
 # Base de datos (Supabase / PostgreSQL)
 
 > **Estado:** migraciones validadas en un PostgreSQL 17 local con la batería
-> de pruebas de seguridad (`supabase/tests/run.sh`, 39 pruebas). La aplicación
-> ya lee y escribe en Supabase cuando están las variables de entorno. **Aún no
-> se ha conectado ni migrado ningún proyecto real de Supabase.**
+> de pruebas de seguridad (`supabase/tests/run.sh`, 39 pruebas). Proyecto de
+> Supabase conectado (2026-10-06): esquema y catálogos instalados con
+> `setup.sql`, perfil de administrador creado y registro público cerrado.
+> Verificado con la clave publishable: el visitante lee catálogos y propiedades
+> publicadas; leads, propietarios, datos internos y perfiles responden
+> `permission denied` (lectura y escritura); el formulario registra leads vía
+> `submit_lead()`.
 
 ## Migraciones (orden de ejecución)
 
