@@ -17,6 +17,7 @@
 | `…000600_rls.sql`         | Row Level Security de todas las tablas                                                        |
 | `…000700_submit_lead.sql` | `submit_lead()`: única vía de entrada de leads públicos                                       |
 | `…000800_storage.sql`     | Bucket `property-media` y sus políticas                                                       |
+| `…000900_grants.sql`      | Permisos explícitos de la Data API (mínimo privilegio)                                        |
 
 `seed.sql` carga los catálogos iniciales (sin datos personales ni propiedades).
 
