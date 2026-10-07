@@ -30,6 +30,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),
+    { url: absolute("/busco-propiedad"), changeFrequency: "monthly", priority: 0.5 },
+    { url: absolute("/publica-tu-propiedad"), changeFrequency: "monthly", priority: 0.5 },
     { url: absolute("/contacto"), changeFrequency: "monthly", priority: 0.5 },
     { url: absolute("/privacidad"), changeFrequency: "yearly", priority: 0.2 },
   ];

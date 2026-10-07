@@ -4,10 +4,15 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { MediaManager } from "@/features/admin/components/media-manager";
+import { OwnerRequestPanel } from "@/features/admin/components/owner-request-panel";
 import { PropertyForm } from "@/features/admin/components/property-form";
 import { StatusControls } from "@/features/admin/components/status-controls";
 import { statusTones } from "@/features/admin/properties/labels";
-import { getAdminProperty, getPropertyFormOptions } from "@/features/admin/properties/queries";
+import {
+  getAdminProperty,
+  getPropertyFormOptions,
+  listSubmissionPhotos,
+} from "@/features/admin/properties/queries";
 import { requireAdmin } from "@/features/admin/session";
 import { statusLabels } from "@/features/properties/constants";
 import { propertyPath } from "@/features/properties/seo";
@@ -26,11 +31,13 @@ export default async function EditPropertyPage({ params, searchParams }: PagePro
   if (!UUID.test(id)) notFound();
 
   const context = await requireAdmin();
-  const [property, options] = await Promise.all([
+  const [property, options, submissionPhotos] = await Promise.all([
     getAdminProperty(context, id),
     getPropertyFormOptions(context),
+    listSubmissionPhotos(context, id),
   ]);
   if (!property) notFound();
+  const pendingRequest = property.origin === "owner_form" && !property.reviewedAt;
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6">
@@ -47,6 +54,7 @@ export default async function EditPropertyPage({ params, searchParams }: PagePro
             <span className="text-sm font-medium tracking-wide text-ink-muted">
               {property.code}
             </span>
+            {pendingRequest && <Badge tone="warning">Solicitud</Badge>}
             <Badge tone={statusTones[property.status]}>{statusLabels[property.status]}</Badge>
           </div>
           <h1 className="text-2xl font-semibold sm:text-3xl">{property.title}</h1>
@@ -62,6 +70,16 @@ export default async function EditPropertyPage({ params, searchParams }: PagePro
         </div>
         <StatusControls id={property.id} status={property.status} />
       </div>
+
+      {(property.owners.length > 0 || submissionPhotos.length > 0) && (
+        <OwnerRequestPanel
+          propertyId={property.id}
+          code={property.code}
+          owners={property.owners}
+          pendingReview={pendingRequest}
+          photos={submissionPhotos}
+        />
+      )}
 
       {query.creada && property.status === "draft" && (
         <p

@@ -20,6 +20,8 @@ export type AdminLeadListItem = {
   nextAction: string | null;
   nextActionAt: string | null;
   propertyCodes: string[];
+  /** Llegó por un formulario y aún no se decide si se mantiene. */
+  pendingReview: boolean;
 };
 
 /** Entrada del timeline: una actividad registrada o un cambio de estado. */
@@ -59,6 +61,10 @@ export type AdminLeadDetail = {
   source: LeadSource;
   utm: { source: string | null; medium: string | null; campaign: string | null };
   businessTypeId: string | null;
+  reviewedAt: string | null;
+  desiredPropertyTypeName: string | null;
+  desiredCommuneName: string | null;
+  desiredMinAreaM2: number | null;
   businessTypeName: string | null;
   businessDescription: string | null;
   budgetMinClp: number | null;

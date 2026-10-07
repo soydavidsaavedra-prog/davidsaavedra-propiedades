@@ -17,6 +17,7 @@ import { buttonStyles } from "@/components/ui/button";
 import { LeadActivityForm } from "@/features/admin/components/lead-activity-form";
 import { LeadNextAction } from "@/features/admin/components/lead-next-action";
 import { LeadProperties } from "@/features/admin/components/lead-properties";
+import { LeadReviewBanner } from "@/features/admin/components/lead-review-banner";
 import { LeadStatusControl } from "@/features/admin/components/lead-status-control";
 import { formatDateTime } from "@/features/admin/leads/format";
 import { leadStatusTones } from "@/features/admin/leads/labels";
@@ -30,7 +31,7 @@ import {
   leadTypeLabels,
   moveTimeframeLabels,
 } from "@/features/leads/constants";
-import { formatCLP } from "@/lib/format";
+import { formatArea, formatCLP } from "@/lib/format";
 import { formatPhone } from "@/lib/phone";
 import { whatsappUrl } from "@/lib/whatsapp";
 
@@ -120,6 +121,12 @@ export default async function LeadPage({ params, searchParams }: PageProps) {
   const budget = budgetText(lead);
   const firstName = lead.fullName.split(" ")[0];
   const details: { label: string; value: string }[] = [
+    lead.desiredPropertyTypeName && { label: "Busca", value: lead.desiredPropertyTypeName },
+    lead.desiredCommuneName && { label: "Comuna de interés", value: lead.desiredCommuneName },
+    lead.desiredMinAreaM2 !== null && {
+      label: "Superficie mínima",
+      value: formatArea(lead.desiredMinAreaM2),
+    },
     budget && { label: "Presupuesto", value: budget },
     lead.moveTimeframe && { label: "Plazo", value: moveTimeframeLabels[lead.moveTimeframe] },
     lead.businessTypeName && { label: "Rubro", value: lead.businessTypeName },
@@ -183,6 +190,8 @@ export default async function LeadPage({ params, searchParams }: PageProps) {
           )}
         </div>
       </div>
+
+      {!lead.reviewedAt && <LeadReviewBanner id={lead.id} name={lead.fullName} />}
 
       {query.creado && (
         <p

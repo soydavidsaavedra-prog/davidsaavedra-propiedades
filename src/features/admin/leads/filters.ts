@@ -11,6 +11,7 @@ import type { AdminLeadListItem } from "./types";
 /** Vistas de la bandeja. La primera es la predeterminada. */
 export const LEAD_VIEWS = [
   { value: "abiertos", label: "En gestión" },
+  { value: "revisar", label: "Por revisar" },
   { value: "nuevos", label: "Nuevos" },
   { value: "vencidos", label: "Acción vencida" },
   { value: "ganados", label: "Ganados" },
@@ -45,6 +46,8 @@ export function matchesView(lead: AdminLeadListItem, view: LeadView, now: number
   switch (view) {
     case "abiertos":
       return !closed;
+    case "revisar":
+      return lead.pendingReview;
     case "nuevos":
       return lead.status === "new";
     case "vencidos":

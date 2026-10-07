@@ -52,6 +52,7 @@ export async function listAdminLeads({ supabase }: AdminContext): Promise<AdminL
       last_interaction_at: string | null;
       next_action: string | null;
       next_action_at: string | null;
+      reviewed_at: string | null;
       lead_properties: { relation: LeadPropertyRelation; properties: PropertyRef }[];
     }[]
   >(
@@ -59,7 +60,7 @@ export async function listAdminLeads({ supabase }: AdminContext): Promise<AdminL
       .from("leads")
       .select(
         `id, full_name, phone, lead_type, status, source, created_at, last_interaction_at,
-         next_action, next_action_at,
+         next_action, next_action_at, reviewed_at,
          lead_properties ( relation, properties ( code, title, status ) )`,
       )
       .order("created_at", { ascending: false }),
@@ -79,6 +80,7 @@ export async function listAdminLeads({ supabase }: AdminContext): Promise<AdminL
     propertyCodes: row.lead_properties
       .filter((link) => link.relation === "inquired" && link.properties)
       .map((link) => link.properties!.code),
+    pendingReview: row.reviewed_at === null,
   }));
 }
 
@@ -106,6 +108,10 @@ type DetailRow = {
   next_action_at: string | null;
   created_at: string;
   business_types: { name: string } | null;
+  reviewed_at: string | null;
+  desired_min_area_m2: Num;
+  property_types: { name: string } | null;
+  communes: { name: string } | null;
   lead_properties: {
     property_id: string;
     relation: LeadPropertyRelation;
@@ -134,7 +140,7 @@ export async function getAdminLead(
     supabase
       .from("leads")
       .select(
-        `*, business_types ( name ),
+        `*, business_types ( name ), property_types ( name ), communes ( name ),
          lead_properties ( property_id, relation, created_at, properties ( code, title, status ) ),
          lead_activities ( id, type, body, occurred_at ),
          lead_status_history ( id, from_status, to_status, created_at )`,
@@ -172,6 +178,10 @@ export async function getAdminLead(
     source: row.source,
     utm: { source: row.utm_source, medium: row.utm_medium, campaign: row.utm_campaign },
     businessTypeId: row.business_type_id,
+    reviewedAt: row.reviewed_at,
+    desiredPropertyTypeName: row.property_types?.name ?? null,
+    desiredCommuneName: row.communes?.name ?? null,
+    desiredMinAreaM2: num(row.desired_min_area_m2),
     businessTypeName: row.business_types?.name ?? null,
     businessDescription: row.business_description,
     budgetMinClp: num(row.budget_min_clp),

@@ -234,3 +234,53 @@ export async function deleteMediaAction(
   refreshSite();
   return { ok: true };
 }
+
+/**
+ * Pasa fotos enviadas por el propietario (bucket privado) a la galería
+ * pública de la propiedad. La primera queda de portada si no había.
+ */
+export async function importSubmissionPhotosAction(
+  propertyId: string,
+  names: string[],
+): Promise<ActionResult> {
+  if (!UUID.test(propertyId) || names.length === 0 || names.length > 50) return invalid;
+  if (!names.every((name) => FILE_NAME.test(name))) return invalid;
+
+  const { supabase, media, sortOrder } = await appendContext(propertyId);
+  let order = sortOrder;
+  let hasCover = media.some((item) => item.is_cover);
+  let failed = 0;
+
+  for (const name of names) {
+    const path = `${propertyId}/${name}`;
+    const { error: copyError } = await supabase.storage
+      .from("property-submissions")
+      .copy(path, path, { destinationBucket: "property-media" });
+    if (copyError) {
+      console.error("[admin] Error al copiar la foto de la solicitud:", copyError.message);
+      failed++;
+      continue;
+    }
+    const { error } = await supabase.from("property_media").insert({
+      property_id: propertyId,
+      kind: "image",
+      provider: "storage",
+      storage_path: path,
+      sort_order: order,
+      is_cover: !hasCover,
+    });
+    if (error) {
+      await supabase.storage.from("property-media").remove([path]);
+      failed++;
+      continue;
+    }
+    await supabase.storage.from("property-submissions").remove([path]);
+    order += 10;
+    hasCover = true;
+  }
+
+  refreshSite();
+  return failed === 0
+    ? { ok: true }
+    : { ok: false, message: `${failed} foto(s) no se pudieron agregar.` };
+}

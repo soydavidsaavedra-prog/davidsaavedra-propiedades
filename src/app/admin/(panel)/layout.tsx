@@ -13,13 +13,22 @@ export default async function PanelLayout({ children }: Readonly<{ children: Rea
       <header className="sticky top-0 z-40 border-b border-line bg-canvas/90 backdrop-blur-md">
         <Container className="flex h-16 items-center justify-between gap-4">
           <div className="flex items-center gap-4 sm:gap-6">
-            <Logo href="/admin/propiedades" size="sm" />
+            {/* En móvil solo el monograma, para que quepa el menú. */}
+            <span className="sm:hidden">
+              <Logo href="/admin/propiedades" size="sm" markOnly />
+            </span>
+            <span className="hidden sm:block">
+              <Logo href="/admin/propiedades" size="sm" />
+            </span>
             <nav aria-label="Panel" className="flex gap-3 text-sm font-medium sm:gap-4">
               <Link href="/admin/propiedades" className="text-ink-soft hover:text-ink">
                 Propiedades
               </Link>
               <Link href="/admin/leads" className="text-ink-soft hover:text-ink">
                 Leads
+              </Link>
+              <Link href="/admin/enlaces" className="text-ink-soft hover:text-ink">
+                Enlaces
               </Link>
             </nav>
           </div>

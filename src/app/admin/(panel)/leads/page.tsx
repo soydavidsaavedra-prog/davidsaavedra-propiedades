@@ -160,6 +160,7 @@ export default async function AdminLeadsPage({ searchParams }: PageProps) {
                         {leadStatusLabels[lead.status]}
                       </Badge>
                       <Badge>{leadTypeLabels[lead.leadType]}</Badge>
+                      {lead.pendingReview && <Badge tone="warning">Por revisar</Badge>}
                     </div>
                     <p className="truncate text-sm text-ink-muted">
                       {formatPhone(lead.phone)} · {leadSourceLabels[lead.source]}

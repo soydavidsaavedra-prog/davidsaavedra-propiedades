@@ -23,6 +23,8 @@ export type AdminPropertyListItem = {
   coverUrl: string | null;
   mediaCount: number;
   updatedAt: string;
+  /** Enviada por un propietario desde el formulario y aún sin revisar. */
+  isRequest: boolean;
 };
 
 export type AdminMedia = {
@@ -79,10 +81,24 @@ export type PropertyFormData = {
   };
 };
 
+export type AdminPropertyOwner = {
+  id: string;
+  fullName: string;
+  phone: string | null;
+  email: string | null;
+  isPrimary: boolean;
+};
+
+/** Foto enviada por el propietario (bucket privado, URL firmada temporal). */
+export type SubmissionPhoto = { name: string; url: string };
+
 export type AdminPropertyDetail = PropertyFormData & {
   id: string;
   code: string;
   status: PropertyStatus;
+  origin: "admin" | "owner_form";
+  reviewedAt: string | null;
+  owners: AdminPropertyOwner[];
   publishedAt: string | null;
   updatedAt: string;
   media: AdminMedia[];

@@ -21,4 +21,8 @@ export type LeadSubmission = {
   message?: string;
   source?: LeadSource;
   utm?: { source?: string; medium?: string; campaign?: string };
+  /** Preferencias de búsqueda (formulario "Busco propiedad"). */
+  desiredPropertyTypeId?: string;
+  desiredCommuneId?: string;
+  desiredMinAreaM2?: number;
 };

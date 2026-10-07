@@ -11,18 +11,19 @@
 
 ## Migraciones (orden de ejecución)
 
-| Archivo                         | Contenido                                                                                     |
-| ------------------------------- | --------------------------------------------------------------------------------------------- |
-| `…000100_base.sql`              | Enums y `set_updated_at()`                                                                    |
-| `…000200_catalogs.sql`          | `property_types`, `communes`, `features`, `business_types`                                    |
-| `…000300_profiles.sql`          | `profiles` (rol), alta automática desde `auth.users`, `is_admin()`                            |
-| `…000400_properties.sql`        | `properties`, `property_internal`, `owners`, `property_owners`, media, características y usos |
-| `…000500_crm.sql`               | `leads`, `lead_properties`, `lead_status_history`, `lead_activities`, `visits`                |
-| `…000600_rls.sql`               | Row Level Security de todas las tablas                                                        |
-| `…000700_submit_lead.sql`       | `submit_lead()`: única vía de entrada de leads públicos                                       |
-| `…000800_storage.sql`           | Bucket `property-media` y sus políticas                                                       |
-| `…000900_grants.sql`            | Permisos explícitos de la Data API (mínimo privilegio)                                        |
-| `…001000_profiles_backfill.sql` | Perfiles para usuarios creados antes de instalar el esquema                                   |
+| Archivo                                             | Contenido                                                                                     |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `…000100_base.sql`                                  | Enums y `set_updated_at()`                                                                    |
+| `…000200_catalogs.sql`                              | `property_types`, `communes`, `features`, `business_types`                                    |
+| `…000300_profiles.sql`                              | `profiles` (rol), alta automática desde `auth.users`, `is_admin()`                            |
+| `…000400_properties.sql`                            | `properties`, `property_internal`, `owners`, `property_owners`, media, características y usos |
+| `…000500_crm.sql`                                   | `leads`, `lead_properties`, `lead_status_history`, `lead_activities`, `visits`                |
+| `…000600_rls.sql`                                   | Row Level Security de todas las tablas                                                        |
+| `…000700_submit_lead.sql`                           | `submit_lead()`: única vía de entrada de leads públicos                                       |
+| `…000800_storage.sql`                               | Bucket `property-media` y sus políticas                                                       |
+| `…000900_grants.sql`                                | Permisos explícitos de la Data API (mínimo privilegio)                                        |
+| `…001000_profiles_backfill.sql`                     | Perfiles para usuarios creados antes de instalar el esquema                                   |
+| `20261007000100_owner_requests_and_lead_review.sql` | Solicitudes de propietarios (borrador + fotos privadas) y revisión de leads                   |
 
 `seed.sql` carga los catálogos iniciales (sin datos personales ni propiedades).
 
@@ -79,6 +80,18 @@ catálogos; no ve leads, propietarios ni datos internos; los leads entran solo
 por `submit_lead()` (consentimiento, validación, deduplicación y límite de
 abuso); un usuario sin rol de administración no puede ascenderse; el historial
 de estados lo escribe solo el trigger. **No usar contra la base de producción.**
+
+## Actualizar un proyecto ya instalado
+
+`setup.sql` es solo para un proyecto vacío. En un proyecto que ya lo tiene,
+cada migración nueva se aplica **una vez** pegando su archivo en el SQL Editor
+(o con `supabase db push`):
+
+- `20261007000100_owner_requests_and_lead_review.sql`: formularios para
+  compartir por enlace. Agrega `properties.origin/reviewed_at`,
+  `leads.reviewed_at` y preferencias de búsqueda, la función
+  `submit_property_request()`, una nueva versión de `submit_lead()` y el bucket
+  privado `property-submissions`. Los leads existentes quedan como revisados.
 
 ## Conectar el proyecto de Supabase
 

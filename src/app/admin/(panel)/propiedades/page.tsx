@@ -7,6 +7,7 @@ import { buttonStyles } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { statusTones } from "@/features/admin/properties/labels";
 import { listAdminProperties } from "@/features/admin/properties/queries";
+import type { AdminPropertyListItem } from "@/features/admin/properties/types";
 import { requireAdmin } from "@/features/admin/session";
 import {
   availabilityLabels,
@@ -31,13 +32,20 @@ export default async function AdminPropertiesPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const context = await requireAdmin();
   const properties = await listAdminProperties(context);
-  const filter = PROPERTY_STATUSES.find((status) => status === params.estado);
-  const visible = filter ? properties.filter((item) => item.status === filter) : properties;
-  const count = (status?: PropertyStatus) =>
-    status ? properties.filter((item) => item.status === status).length : properties.length;
+  // Vista: un estado de publicación o las solicitudes de propietarios por revisar.
+  const filter: PropertyStatus | "solicitudes" | undefined =
+    params.estado === "solicitudes"
+      ? "solicitudes"
+      : PROPERTY_STATUSES.find((status) => status === params.estado);
+  const matches = (item: AdminPropertyListItem, tab?: PropertyStatus | "solicitudes") =>
+    !tab || (tab === "solicitudes" ? item.isRequest : item.status === tab);
+  const visible = properties.filter((item) => matches(item, filter));
+  const count = (tab?: PropertyStatus | "solicitudes") =>
+    properties.filter((item) => matches(item, tab)).length;
 
-  const tabs: { label: string; status?: PropertyStatus }[] = [
+  const tabs: { label: string; status?: PropertyStatus | "solicitudes" }[] = [
     { label: "Todas" },
+    { label: "Solicitudes", status: "solicitudes" },
     { label: "Publicadas", status: "published" },
     { label: "Borradores", status: "draft" },
     { label: "Archivadas", status: "archived" },
@@ -74,6 +82,7 @@ export default async function AdminPropertiesPage({ searchParams }: PageProps) {
                 active
                   ? "bg-primary text-primary-contrast"
                   : "text-ink-soft hover:bg-surface-muted",
+                tab.status === "solicitudes" && count(tab.status) > 0 && !active && "text-warning",
               )}
             >
               {tab.label} <span className="opacity-70">{count(tab.status)}</span>
@@ -131,6 +140,7 @@ export default async function AdminPropertiesPage({ searchParams }: PageProps) {
                     <span className="text-xs font-medium tracking-wide text-ink-muted">
                       {property.code}
                     </span>
+                    {property.isRequest && <Badge tone="warning">Solicitud</Badge>}
                     <Badge tone={statusTones[property.status]}>
                       {statusLabels[property.status]}
                     </Badge>
