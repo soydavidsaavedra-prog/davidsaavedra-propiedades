@@ -19,7 +19,12 @@ import {
   updateMediaTextAction,
 } from "../properties/media-actions";
 import type { AdminMedia } from "../properties/types";
-import { ACCEPTED_FILES, MAX_IMAGE_SIDE, prepareFile, UPLOAD_EXTENSIONS } from "../media/prepare";
+import {
+  ACCEPTED_FILES,
+  MAX_IMAGE_SIDE,
+  prepareFile,
+  UPLOAD_EXTENSIONS,
+} from "@/lib/media/prepare";
 
 type MediaManagerProps = {
   propertyId: string;

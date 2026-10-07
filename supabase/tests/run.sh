@@ -96,5 +96,41 @@ check "una sola portada por propiedad" "*property_media_one_cover*" "$(q authent
 echo "== Storage =="
 check "anónimo no sube archivos" "*row-level security*" "$(q anon '' "insert into storage.objects (bucket_id, name) values ('property-media', 'x.jpg')")"
 check "admin sube archivos" "" "$(q authenticated $ADMIN "insert into storage.objects (bucket_id, name) values ('property-media', 'e0/x.jpg')")"
+echo "== Revisión de leads y preferencias de búsqueda =="
+check "lead del formulario queda por revisar" "t" "$(q authenticated $ADMIN "select reviewed_at is null from leads where id = '$L3'")"
+TYPE_ID=$(q authenticated $ADMIN "select id from property_types where slug = 'local-comercial'")
+COMMUNE_ID=$(q authenticated $ADMIN "select id from communes where slug = 'la-ligua'")
+L4=$(q anon '' "select public.submit_lead(p_full_name => 'Rosa Pinto', p_phone => '+56933332222', p_consent => true, p_desired_property_type_id => '$TYPE_ID', p_desired_commune_id => '$COMMUNE_ID', p_desired_min_area_m2 => 60)")
+check "guarda tipo, comuna y superficie buscados" "true|true|60.00" "$(q authenticated $ADMIN "select (desired_property_type_id = '$TYPE_ID')::text||'|'||(desired_commune_id = '$COMMUNE_ID')::text||'|'||desired_min_area_m2 from leads where id = '$L4'")"
+check "rechaza superficie fuera de rango" "*invalid_area*" "$(q anon '' "select public.submit_lead(p_full_name => 'Rosa Pinto', p_phone => '+56933332222', p_consent => true, p_desired_min_area_m2 => 0)")"
+check "admin marca el lead como revisado" "1" "$(q authenticated $ADMIN "with u as (update leads set reviewed_at = now() where id = '$L4' returning 1) select count(*) from u")"
+
+echo "== Solicitudes de propietarios (anónimo) =="
+FEATURE_ID=$(q authenticated $ADMIN "select id from features order by sort_order limit 1")
+P1=$(q anon '' "select public.submit_property_request(p_full_name => 'Luis Vera', p_phone => '+56944443333', p_consent => true, p_property_type_id => '$TYPE_ID', p_commune_id => '$COMMUNE_ID', p_street_address => 'Ortiz de Rozas 456', p_price_amount => 500000, p_built_area_m2 => 80, p_message => 'Disponible desde marzo', p_feature_ids => array['$FEATURE_ID']::uuid[])")
+check "crea la solicitud y devuelve el id de la propiedad" "????????-????-????-????-????????????" "$P1"
+check "exige consentimiento" "*consent_required*" "$(q anon '' "select public.submit_property_request(p_full_name => 'Luis Vera', p_phone => '+56944443333', p_consent => false, p_property_type_id => '$TYPE_ID', p_commune_id => '$COMMUNE_ID')")"
+check "rechaza catálogo inexistente" "*invalid_catalog*" "$(q anon '' "select public.submit_property_request(p_full_name => 'Luis Vera', p_phone => '+56944443333', p_consent => true, p_property_type_id => '00000000-0000-4000-8000-000000000000', p_commune_id => '$COMMUNE_ID')")"
+check "el público no ve la solicitud (borrador)" "DS-0001" "$(q anon '' "select string_agg(code, ',') from properties")"
+check "queda en borrador, por revisar y con título" "draft|owner_form|true|Local comercial en La Ligua" "$(q authenticated $ADMIN "select status||'|'||origin||'|'||(reviewed_at is null)::text||'|'||title from properties where id = '$P1'")"
+check "slug a partir del código" "solicitud-ds-*" "$(q authenticated $ADMIN "select slug from properties where id = '$P1'")"
+check "dirección y comentarios en datos internos" "Ortiz de Rozas 456|Disponible desde marzo" "$(q authenticated $ADMIN "select street_address||'|'||internal_notes from property_internal where property_id = '$P1'")"
+check "propietario principal con consentimiento" "Luis Vera|true|true" "$(q authenticated $ADMIN "select o.full_name||'|'||po.is_primary::text||'|'||(o.consent_at is not null)::text from property_owners po join owners o on o.id = po.owner_id where po.property_id = '$P1'")"
+check "característica guardada" "1" "$(q authenticated $ADMIN "select count(*) from property_features where property_id = '$P1'")"
+P2=$(q anon '' "select public.submit_property_request(p_full_name => 'Luis Vera', p_phone => '+56944443333', p_consent => true, p_property_type_id => '$TYPE_ID', p_commune_id => '$COMMUNE_ID')")
+check "mismo teléfono reutiliza al propietario" "1" "$(q authenticated $ADMIN "select count(*) from owners where phone = '+56944443333'")"
+q anon '' "select public.submit_property_request(p_full_name => 'Luis Vera', p_phone => '+56944443333', p_consent => true, p_property_type_id => '$TYPE_ID', p_commune_id => '$COMMUNE_ID')" >/dev/null
+check "límite de abuso (3 solicitudes/hora)" "*rate_limited*" "$(q anon '' "select public.submit_property_request(p_full_name => 'Luis Vera', p_phone => '+56944443333', p_consent => true, p_property_type_id => '$TYPE_ID', p_commune_id => '$COMMUNE_ID')")"
+
+echo "== Storage de solicitudes =="
+F1="$P1/11111111-1111-4111-8111-111111111111.jpg"
+check "anónimo sube foto a su solicitud" "" "$(q anon '' "insert into storage.objects (bucket_id, name) values ('property-submissions', '$F1')")"
+check "anónimo no lee las fotos" "0" "$(q anon '' "select count(*) from storage.objects where bucket_id = 'property-submissions'")"
+check "no sube a una propiedad que no es solicitud" "*row-level security*" "$(q anon '' "insert into storage.objects (bucket_id, name) values ('property-submissions', 'e0000000-0000-4000-8000-000000000001/11111111-1111-4111-8111-111111111111.jpg')")"
+check "no sube con nombre libre" "*row-level security*" "$(q anon '' "insert into storage.objects (bucket_id, name) values ('property-submissions', '$P1/hack.svg')")"
+q authenticated $ADMIN "update properties set reviewed_at = now() where id = '$P2'" >/dev/null
+check "no sube a una solicitud ya revisada" "*row-level security*" "$(q anon '' "insert into storage.objects (bucket_id, name) values ('property-submissions', '$P2/22222222-2222-4222-8222-222222222222.jpg')")"
+check "no sube al bucket público" "*row-level security*" "$(q anon '' "insert into storage.objects (bucket_id, name) values ('property-media', '$F1')")"
+check "admin ve las fotos de la solicitud" "1" "$(q authenticated $ADMIN "select count(*) from storage.objects where bucket_id = 'property-submissions'")"
 echo; echo "Resultado: $PASS OK, $FAIL fallos"
 [[ $FAIL -eq 0 ]]

@@ -181,6 +181,14 @@ export async function setPropertyStatusAction(
     console.error("[admin] Error al cambiar el estado:", describe(error));
     return { ok: false, message: "No se pudo cambiar el estado." };
   }
+  // Publicar una solicitud de propietario la da por revisada.
+  if (status === "published") {
+    await supabase
+      .from("properties")
+      .update({ reviewed_at: new Date().toISOString() })
+      .eq("id", id)
+      .is("reviewed_at", null);
+  }
   refreshSite();
   return { ok: true };
 }
@@ -200,10 +208,13 @@ export async function deletePropertyAction(id: string): Promise<ActionResult> {
     return { ok: false, message: "Pasa la propiedad a borrador antes de eliminarla." };
   }
 
-  const bucket = supabase.storage.from("property-media");
-  const { data: files } = await bucket.list(id, { limit: 1000 });
-  if (files && files.length > 0) {
-    await bucket.remove(files.map((file) => `${id}/${file.name}`));
+  // Archivos de la galería y fotos enviadas por el propietario (si las hay).
+  for (const bucketId of ["property-media", "property-submissions"]) {
+    const bucket = supabase.storage.from(bucketId);
+    const { data: files } = await bucket.list(id, { limit: 1000 });
+    if (files && files.length > 0) {
+      await bucket.remove(files.map((file) => `${id}/${file.name}`));
+    }
   }
 
   const { error } = await supabase.from("properties").delete().eq("id", id);
@@ -213,6 +224,19 @@ export async function deletePropertyAction(id: string): Promise<ActionResult> {
   }
   refreshSite();
   redirect("/admin/propiedades?eliminada=1");
+}
+
+/** Da por revisada una solicitud de propietario (deja de aparecer como pendiente). */
+export async function markPropertyReviewedAction(id: string): Promise<ActionResult> {
+  const { supabase } = await assertAdmin();
+  if (!UUID.test(id)) return { ok: false, message: "Solicitud no válida." };
+  const { error } = await supabase
+    .from("properties")
+    .update({ reviewed_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) return { ok: false, message: "No se pudo guardar." };
+  refreshSite();
+  return { ok: true };
 }
 
 function isUniqueViolation(error: unknown, column: string): boolean {

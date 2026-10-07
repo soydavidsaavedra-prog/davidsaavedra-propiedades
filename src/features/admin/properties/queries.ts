@@ -11,6 +11,7 @@ import type {
 import { publicMediaUrl, type SupabaseConfig } from "@/lib/supabase/config";
 import type { AdminContext } from "../session";
 import type {
+  SubmissionPhoto,
   AdminMedia,
   AdminPropertyDetail,
   AdminPropertyListItem,
@@ -87,6 +88,8 @@ export async function listAdminProperties({
       price_amount: Num;
       price_currency: PriceCurrency;
       updated_at: string;
+      origin: string;
+      reviewed_at: string | null;
       property_types: { name: string } | null;
       communes: { name: string } | null;
       property_media: Pick<MediaRow, "kind" | "provider" | "storage_path" | "is_cover">[];
@@ -96,6 +99,7 @@ export async function listAdminProperties({
       .from("properties")
       .select(
         `id, code, slug, title, status, availability, price_amount, price_currency, updated_at,
+         origin, reviewed_at,
          property_types ( name ), communes ( name ),
          property_media ( kind, provider, storage_path, is_cover )`,
       )
@@ -118,6 +122,7 @@ export async function listAdminProperties({
       coverUrl: cover?.storage_path ? publicMediaUrl(config, cover.storage_path) : null,
       mediaCount: row.property_media.length,
       updatedAt: row.updated_at,
+      isRequest: row.origin === "owner_form" && row.reviewed_at === null,
     };
   });
 }
@@ -155,6 +160,12 @@ type DetailRow = {
   seo_description: string | null;
   published_at: string | null;
   updated_at: string;
+  origin: "admin" | "owner_form";
+  reviewed_at: string | null;
+  property_owners: {
+    is_primary: boolean;
+    owners: { id: string; full_name: string; phone: string | null; email: string | null } | null;
+  }[];
   property_internal: {
     street_address: string | null;
     unit: string | null;
@@ -178,7 +189,8 @@ export async function getAdminProperty(
         `*, property_internal ( street_address, unit, commission_terms, keys_location, internal_notes ),
          property_media ( ${MEDIA_SELECT} ),
          property_features ( feature_id ),
-         property_suitable_uses ( business_type_id )`,
+         property_suitable_uses ( business_type_id ),
+         property_owners ( is_primary, owners ( id, full_name, phone, email ) )`,
       )
       .eq("id", id)
       .maybeSingle(),
@@ -192,6 +204,18 @@ export async function getAdminProperty(
     status: row.status,
     publishedAt: row.published_at,
     updatedAt: row.updated_at,
+    origin: row.origin,
+    reviewedAt: row.reviewed_at,
+    owners: row.property_owners
+      .filter((link) => link.owners)
+      .map((link) => ({
+        id: link.owners!.id,
+        fullName: link.owners!.full_name,
+        phone: link.owners!.phone,
+        email: link.owners!.email,
+        isPrimary: link.is_primary,
+      }))
+      .sort((a, b) => Number(b.isPrimary) - Number(a.isPrimary)),
     title: row.title,
     slug: row.slug,
     summary: row.summary,
@@ -262,4 +286,28 @@ export async function getPropertyFormOptions({
     features,
     businessTypes,
   };
+}
+
+/**
+ * Fotos que envió el propietario con su solicitud (bucket privado
+ * `property-submissions`), con URLs firmadas válidas por una hora.
+ */
+export async function listSubmissionPhotos(
+  { supabase }: AdminContext,
+  propertyId: string,
+): Promise<SubmissionPhoto[]> {
+  const bucket = supabase.storage.from("property-submissions");
+  const { data: files } = await bucket.list(propertyId, {
+    limit: 100,
+    sortBy: { column: "created_at", order: "asc" },
+  });
+  const names = (files ?? []).map((file) => file.name).filter((name) => name.includes("."));
+  if (names.length === 0) return [];
+  const { data: signed } = await bucket.createSignedUrls(
+    names.map((name) => `${propertyId}/${name}`),
+    3600,
+  );
+  return (signed ?? []).flatMap((item, index) =>
+    item.signedUrl ? [{ name: names[index]!, url: item.signedUrl }] : [],
+  );
 }

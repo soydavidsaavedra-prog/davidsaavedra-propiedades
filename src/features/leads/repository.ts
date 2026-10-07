@@ -39,6 +39,9 @@ export async function submitLead(submission: LeadSubmission): Promise<SubmitLead
       p_utm_source: submission.utm?.source,
       p_utm_medium: submission.utm?.medium,
       p_utm_campaign: submission.utm?.campaign,
+      p_desired_property_type_id: submission.desiredPropertyTypeId,
+      p_desired_commune_id: submission.desiredCommuneId,
+      p_desired_min_area_m2: submission.desiredMinAreaM2,
     });
 
     if (error) {

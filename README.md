@@ -42,7 +42,7 @@ gestión de propiedades y leads.
   deben quedar bajo 50 MB. Portada, orden, texto alternativo y enlaces de
   YouTube o Vimeo. Las librerías de conversión (`heic-to`, `mediabunny`) se
   cargan solo al elegir un archivo que las necesita
-  (`src/features/admin/media/prepare.ts`).
+  (`src/lib/media/prepare.ts`).
 - **Leads (CRM):** bandeja con vistas (abiertos, nuevos, vencidos, arrendados,
   perdidos), búsqueda y filtros; ficha con contacto directo, etapa del embudo
   (perdido exige motivo), próxima acción, timeline de notas e interacciones con
@@ -50,6 +50,12 @@ gestión de propiedades y leads.
   que llegan por WhatsApp, redes o en persona (sin duplicar un lead abierto con
   el mismo teléfono), edición de datos y eliminación con todo su historial
   cuando el titular lo pide (Ley 21.719).
+- **Enlaces para compartir** (`/admin/enlaces`), listos para WhatsApp:
+  `/publica-tu-propiedad` (el propietario envía datos y fotos opcionales; queda
+  como borrador en Propiedades → Solicitudes, con las fotos en un bucket
+  privado hasta agregarlas a la galería) y `/busco-propiedad` (el cliente
+  indica qué busca; el lead queda en Leads → Por revisar para mantenerlo o
+  descartarlo). Publicar una solicitud la da por revisada.
 - **Seguridad:** `src/proxy.ts` renueva la sesión y redirige a `/admin/ingresar`
   (filtro optimista); cada página y Server Action vuelve a verificar el rol
   `admin` en `profiles` (`src/features/admin/session.ts`), y RLS lo exige en la

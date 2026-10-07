@@ -17,7 +17,11 @@ export type LeadFormValues = Partial<
     | "plazo"
     | "mensaje"
     | "consentimiento"
-    | "tipo_cliente",
+    | "tipo_cliente"
+    | "email"
+    | "tipo_buscado"
+    | "comuna_buscada"
+    | "superficie_min",
     string
   >
 >;
@@ -58,6 +62,10 @@ const FORM_FIELDS = [
   "mensaje",
   "consentimiento",
   "tipo_cliente",
+  "email",
+  "tipo_buscado",
+  "comuna_buscada",
+  "superficie_min",
 ] as const;
 
 function submittedValues(formData: FormData): LeadFormValues {

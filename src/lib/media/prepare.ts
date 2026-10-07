@@ -64,6 +64,30 @@ function isVideo(file: File): boolean {
   return file.type.startsWith("video/") || ["mov", "m4v", "mp4", "webm"].includes(extension(file));
 }
 
+/** Fotos que acepta el formulario público de propietarios (sin videos). */
+export const ACCEPTED_PHOTOS = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+  ".heic",
+  ".heif",
+].join(",");
+
+/**
+ * Solo fotos, siempre como JPEG, PNG o WebP (los formatos del bucket de
+ * solicitudes): HEIC y otros formatos se convierten a JPEG.
+ */
+export async function preparePhoto(file: File): Promise<PreparedFile> {
+  if (isVideo(file)) throw new Error("Aquí solo se pueden subir fotos.");
+  if (isHeic(file)) return prepareHeic(file);
+  if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+    throw new Error("Formato no compatible. Usa JPG, PNG, WebP o HEIC.");
+  }
+  return prepareFile(file);
+}
+
 export async function prepareFile(
   file: File,
   onProgress?: ProgressCallback,

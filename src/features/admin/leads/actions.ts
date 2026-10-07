@@ -241,6 +241,8 @@ export async function saveLeadAction(
     .insert({
       ...toLeadColumns(data),
       assigned_to: user.id,
+      // Lo crea el administrador: no queda por revisar.
+      reviewed_at: new Date().toISOString(),
       consent_at: data.consent ? new Date().toISOString() : null,
     })
     .select("id")
@@ -272,4 +274,20 @@ export async function deleteLeadAction(id: string): Promise<LeadActionResult> {
     return { ok: false, message: "No se pudo eliminar el lead." };
   }
   redirect("/admin/leads?eliminado=1");
+}
+
+/** Mantiene un lead que llegó por un formulario (deja de estar "por revisar"). */
+export async function keepLeadAction(id: string): Promise<LeadActionResult> {
+  const { supabase } = await assertAdmin();
+  if (!UUID.test(id)) return { ok: false, message: "Solicitud no válida." };
+  const { error } = await supabase
+    .from("leads")
+    .update({ reviewed_at: new Date().toISOString() })
+    .eq("id", id);
+  if (error) {
+    console.error("[admin] Error al marcar el lead como revisado:", error.message);
+    return { ok: false, message: "No se pudo guardar." };
+  }
+  refresh();
+  return { ok: true };
 }
